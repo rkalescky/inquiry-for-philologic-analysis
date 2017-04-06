@@ -1,5 +1,7 @@
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
+import glob2
 import config
 from wordcloud import WordCloud
 
