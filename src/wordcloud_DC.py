@@ -3,13 +3,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import glob2
 import config
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
 
 
 # test wordcloud on 1% threshold
 # lowercase debate titles and concatenate to giant text string
 text = config.concat_df1[2].apply(lambda x: x.lower())
 text = text.str.cat(sep=' ')
+
+STOPWORDS.add('question')
+STOPWORDS.add('bill')
+STOPWORDS.add('second')
+STOPWORDS.add('reading')
 
 # create the wordcloud
 wordcloud = WordCloud().generate(text)
@@ -21,7 +26,7 @@ plt.savefig('../images/wordcloud_{}.jpg'.format(1))
 plt.show()
 
 
-# save wordclouds for each threshold
+# save wordclouds for each threshold 5-25%
 concat_tsvs = [config.concat_df5, config.concat_df10,
                config.concat_df15, config.concat_df20, config.concat_df25]
 
@@ -72,3 +77,25 @@ def wordcloud_timewindow(path):
 
 
 wordcloud_timewindow(config.path_output + 'DC/debates_kld1_*_0.01.txt')
+wordcloud_timewindow(config.path_output + 'DC/overlap_*.txt')
+
+
+def wordcloud_decade(concat_tsv):
+    # lowercase debate titles and concatenate to giant text string
+    text = concat_tsv
+    text[2] = text[2].map(lambda x: x.lower())
+    text = (text.groupby([1]).aggregate({2: lambda x: x.str.cat(sep=' ')}).
+            reset_index())
+
+    for index, row in text.iterrows():
+        # create the wordcloud
+        wordcloud = WordCloud().generate(row[2])
+
+        # generate the image
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis('off')
+        plt.savefig('../images/wordcloud_{}.jpg'.format(row[1]))
+        # plt.show()
+
+
+wordcloud_decade(config.concat_overlap)

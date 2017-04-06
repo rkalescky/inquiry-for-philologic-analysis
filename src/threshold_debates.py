@@ -32,6 +32,46 @@ def threshold(path, percent):
                   sep='\t', header=False, index=False)
 
 
+def overlap_timewindows(path):
+    '''
+    finds overlapping debates in adjacent time windows
+    '''
+    years_list = []
+    num_overlap = []
+    num_total = []
+    overlap_list = []
+
+    timewindows = glob2.glob(path)
+    pairs = ([[timewindows[i], timewindows[i + 1]]
+             for i in range(len(timewindows) - 1)])
+
+    for [current_f, next_f] in pairs:
+        # get year_start from filename
+        path = os.path.splitext(current_f)[0]
+        path_split = os.path.basename(path).split('_')
+        year_start = path_split[2]
+        year_end = int(year_start) + 6
+
+        # get overlapping debate titles
+        f1 = pd.read_csv(current_f, sep='\t', header=None)
+        f2 = pd.read_csv(next_f, sep='\t', header=None)
+        overlap = f1.merge(f2, how='inner', on=[0, 1, 2])
+        overlap.to_csv(config.path_output +
+                       'DC/overlap_{}_{}.txt'.format(year_start, year_end),
+                       sep='\t', header=False, index=False)
+
+        # count overlapping and total debates
+        years_list.append(year_start + ' - ' + str(year_end))
+        num_overlap.append(overlap.shape[0])
+        num_total.append(f1.shape[0] + f2.shape[0])
+        overlap_list.append(overlap[2])
+
+    overlap_nums = pd.DataFrame({'years': years_list,
+                                 'num_overlap': num_overlap,
+                                 'num_total': num_total})
+    return(overlap_nums)
+
+
 def concat_timewindows(path):
     '''
     concatenates derived corpus dataframes and removes duplicate rows
@@ -69,3 +109,11 @@ config.concat_df20 = concat_timewindows(config.path_output +
                                         'DC/debates_*_0.2.txt')
 config.concat_df25 = concat_timewindows(config.path_output +
                                         'DC/debates_*_0.25.txt')
+
+# find overlap between timewindows for 1% tranche
+config.overlap_nums = overlap_timewindows(config.path_output +
+                                          'DC/debates_kld1_*0.01.txt')
+
+# concatenate overlapping debates
+config.concat_overlap = concat_timewindows(config.path_output +
+                                           'DC/overlap_*.txt')
