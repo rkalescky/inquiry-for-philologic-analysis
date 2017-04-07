@@ -12,4 +12,6 @@ with open(path_input + 'long_bills_stemmed_metadata.tsv', 'r') as f:
 
 # read raw hansard
 with open(path_raw + 'membercontributions-20161026.tsv', 'r') as f:
-    text = pd.read_csv(f, sep='\t', header=None)
+    text = pd.read_csv(f, sep='\t')
+with open(path_raw + 'membercont-test.tsv', 'r') as f:
+    text2 = pd.read_csv(f, sep='\t')

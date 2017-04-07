@@ -2,8 +2,8 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import glob2
-import config
 from wordcloud import WordCloud, STOPWORDS
+import config
 
 
 # test wordcloud on 1% threshold
@@ -94,7 +94,7 @@ def wordcloud_decade(concat_tsv):
         # generate the image
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis('off')
-        plt.savefig('../images/wordcloud_{}.jpg'.format(row[1]))
+        plt.savefig('../images/wordcloud_{}.png'.format(row[1]))
         # plt.show()
 
 
