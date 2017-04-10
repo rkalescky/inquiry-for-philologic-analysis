@@ -26,7 +26,7 @@ def lemmatize_df(df):
         if type(row['SPEECH_ACT']) == str:
             tokens = word_tokenize(row['SPEECH_ACT'])
         else:
-            print index + " is not string"
+            print "Not string"
             continue
         alpha_tokens = [token for token in tokens if token.isalpha()]
         spellchecked_tokens = [token for token in alpha_tokens

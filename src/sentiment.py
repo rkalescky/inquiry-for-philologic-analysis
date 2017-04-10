@@ -1,6 +1,6 @@
 import pandas as pd
 import nltk
-import yaml
+import matplotlib.pyplot as plt
 import config
 
 # code from http://fjavieralba.com/basic-sentiment-analysis-with-python.html
@@ -146,15 +146,113 @@ pos_dict = dict(zip(pos.word, pos.valence))
 # set up dictionary of sentiment valences
 dicttagger = DictionaryTagger([neg_dict, pos_dict])
 
+# try test raw speech acts
 for index, row in config.text2.iterrows():
     # set up data structure
     split_sentences = splitter.split(row['SPEECH_ACT'])
     pos_tagged_sentences = postagger.pos_tag(split_sentences)
-
     # tag sentences with sentiment
     dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
-
     # compute sentiment score
-    sentiment_score = sentiment_score(dict_tagged_sentences)
+    sentiment = sentiment_score(dict_tagged_sentences)
+    # print sentiment
+    config.text2.loc[index, 'SENTIMENT_SCORE'] = sentiment
 
-    config.text2.loc[index, 'SENTIMENT_SCORE'] = sentiment_score
+# try test lemmas
+for index, row in config.textlem2.iterrows():
+    # set up data structure
+    if type(row['LEMMAS']) == str:
+        split_sentences = splitter.split(row['LEMMAS'])
+    else:
+        print "Not string"
+        continue
+    # pos tag each word in the sentences
+    pos_tagged_sentences = postagger.pos_tag(split_sentences)
+    # tag sentences with sentiment
+    dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
+    # compute sentiment score
+    sentiment = sentiment_score(dict_tagged_sentences)
+    # print sentiment
+    config.textlem2.loc[index, 'SENTIMENT_SCORE'] = sentiment
+
+# try raw speech acts
+for index, row in config.text.iterrows():
+    # set up data structure
+    if type(row['SPEECH_ACT']) == str:
+        split_sentences = splitter.split(row['SPEECH_ACT'])
+    else:
+        print "Not string"
+        continue
+    # pos tag words in sentences
+    pos_tagged_sentences = postagger.pos_tag(split_sentences)
+    # tag sentences with sentiment
+    dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
+    # compute sentiment score
+    sentiment = sentiment_score(dict_tagged_sentences)
+    # print sentiment
+    config.text.loc[index, 'SENTIMENT_SCORE'] = sentiment
+
+config.text.to_csv(config.path_input + 'hansard_sentiment.tsv', sep='\t')
+
+config.text = pd.read_csv(config.path_input + 'hansard_sentiment.tsv', sep='\t')
+
+# fill sentiment scores wtih 0 if speech act wasn't a string
+config.text = config.text.fillna(0)
+
+# create year and decade columns
+config.text['YEAR'] = config.text.DATE.str[:4]
+config.text = config.text.fillna(method='ffill')  # forward fill missing dates
+config.text['DECADE'] = (config.text['YEAR'].
+                         map(lambda x: int(x) - (int(x) % 10)))
+
+# replace speech acts that aren't string with 'no text'
+for index, row in config.text.iterrows():
+    if type(row['SPEECH_ACT']) != str:
+        config.text.loc[index, 'SPEECH_ACT'] = 'no text'
+
+# groupby debates and concatenate
+config.debates = (config.text.groupby(['YEAR', 'BILL']).
+                  aggregate({'SPEECH_ACT': lambda x: x.str.cat(sep='. '),
+                             'SENTIMENT_SCORE': {'AVG_SENTIMENT': 'mean',
+                                                 'STD_SENTIMENT': 'std'}}).
+                  reset_index())
+
+# groupby year and average
+config.yearly_sent = (config.text.groupby(['YEAR']).
+                      aggregate({'SENTIMENT_SCORE': {'AVG_SENTIMENT': 'mean',
+                                                     'STD_SENTIMENT': 'std'}}).
+                      reset_index())
+
+# plot average sentiment for each debate
+plt.scatter(config.debates.YEAR.astype(float),
+            config.debates.SENTIMENT_SCORE.AVG_SENTIMENT,
+            alpha=0.1)
+plt.title('Average Debate Sentiment')
+plt.ylabel('average sentiment')
+plt.xlabel('years')
+plt.grid(True)
+# plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+plt.show()
+
+# plot average sentiment for each debate
+plt.scatter(config.text.YEAR.astype(float),
+            config.text.SENTIMENT_SCORE,
+            alpha=0.1)
+plt.title('Speech Act Sentiment')
+plt.ylabel('sentiment')
+plt.xlabel('years')
+plt.grid(True)
+# plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+plt.show()
+
+# plot average sentiment for each debate
+plt.plot(config.yearly_sent.YEAR.astype(float),
+         config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT)
+plt.title('Average Sentiment')
+plt.ylabel('sentiment')
+plt.xlabel('years')
+plt.grid(True)
+# plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+plt.show()
+config.yearly_sent.YEAR.astype(float)
+config.yearly_sent.YEAR.unique()
