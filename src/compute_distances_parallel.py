@@ -65,6 +65,7 @@ for i in chunker(seed2, 50):
     seed_doctopics = doctopics[seed_idx]
     main_idx = pd.Series(config.metadata[(config.metadata[0] >= year_min) & (config.metadata[0] < year_max+1)].index)
     main_doctopics = doctopics[main_idx]
+    # print config.metadata.loc[main_idx, 0].min(), config.metadata.loc[main_idx, 0].max(), config.metadata.loc[main_idx, 2]
 
     # calculate distance matrix for each time window and pickle
     compute_distances(entropy, 'kld1_{}_{}'.format(year_min, year_max))

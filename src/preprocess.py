@@ -25,24 +25,27 @@ def lemmatize_df(df):
         # tokenize word_pos
         if type(row['SPEECH_ACT']) == str:
             tokens = word_tokenize(row['SPEECH_ACT'])
+            alpha_tokens = [token for token in tokens if token.isalpha()]
+            spellchecked_tokens = [token for token in alpha_tokens
+                                   if dictionary.check(token)]
+            tagged_tokens = pos_tag(spellchecked_tokens)
+            for tagged_token in tagged_tokens:
+                word = str(tagged_token[0])
+                word_pos = tagged_token[1]
+                word_pos_morphed = tag2pos(word_pos)
+                if word_pos_morphed is not '':
+                    lemma = lemmatizer.lemmatize(word, word_pos_morphed)
+                else:
+                    lemma = lemmatizer.lemmatize(word)
+                lemma_list.append(lemma)
+            lemma_string = ' '.join(lemma_list)
+            df.loc[index, 'LEMMAS'] = lemma_string
         else:
             print "Not string"
+            df.loc[index, 'SPEECH_ACT'] = 'not string'
+            df.loc[index, 'LEMMAS'] = 'not string'
             continue
-        alpha_tokens = [token for token in tokens if token.isalpha()]
-        spellchecked_tokens = [token for token in alpha_tokens
-                               if dictionary.check(token)]
-        tagged_tokens = pos_tag(spellchecked_tokens)
-        for tagged_token in tagged_tokens:
-            word = str(tagged_token[0])
-            word_pos = tagged_token[1]
-            word_pos_morphed = tag2pos(word_pos)
-            if word_pos_morphed is not '':
-                lemma = lemmatizer.lemmatize(word, word_pos_morphed)
-            else:
-                lemma = lemmatizer.lemmatize(word)
-            lemma_list.append(lemma)
-        lemma_string = ' '.join(lemma_list)
-        df.loc[index, 'LEMMAS'] = lemma_string
+
 
     return(df)
 

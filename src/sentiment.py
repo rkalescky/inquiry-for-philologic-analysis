@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import nltk
 import matplotlib.pyplot as plt
 import config
@@ -192,29 +193,37 @@ for index, row in config.text.iterrows():
     # print sentiment
     config.text.loc[index, 'SENTIMENT_SCORE'] = sentiment
 
+# write to csv / read csv if kernel gets interrupted
 config.text.to_csv(config.path_input + 'hansard_sentiment.tsv', sep='\t')
-
 config.text = pd.read_csv(config.path_input + 'hansard_sentiment.tsv', sep='\t')
 
 # fill sentiment scores wtih 0 if speech act wasn't a string
-config.text = config.text.fillna(0)
-
-# create year and decade columns
-config.text['YEAR'] = config.text.DATE.str[:4]
-config.text = config.text.fillna(method='ffill')  # forward fill missing dates
-config.text['DECADE'] = (config.text['YEAR'].
-                         map(lambda x: int(x) - (int(x) % 10)))
-
+config.text['SENTIMENT_SCORE'] = config.text['SENTIMENT_SCORE'].fillna(0)
 # replace speech acts that aren't string with 'no text'
 for index, row in config.text.iterrows():
     if type(row['SPEECH_ACT']) != str:
         config.text.loc[index, 'SPEECH_ACT'] = 'no text'
 
+# get year from date
+config.text['YEAR'] = config.text.DATE.str[:4]
+# convert years column to numeric
+config.text['YEAR'] = config.text['YEAR'].astype(float)
+# change years after 1908 to NaN
+for index, row in config.text.iterrows():
+    if row['YEAR'] > 1908:
+        config.text.loc[index, 'YEAR'] = np.NaN
+# forward fill missing dates
+config.text['YEAR'] = config.text['YEAR'].fillna(method='ffill')
+# compute decade
+config.text['DECADE'] = (config.text['YEAR'].
+                         map(lambda x: int(x) - (int(x) % 10)))
+
 # groupby debates and concatenate
 config.debates = (config.text.groupby(['YEAR', 'BILL']).
                   aggregate({'SPEECH_ACT': lambda x: x.str.cat(sep='. '),
                              'SENTIMENT_SCORE': {'AVG_SENTIMENT': 'mean',
-                                                 'STD_SENTIMENT': 'std'}}).
+                                                 'STD_SENTIMENT': 'std',
+                                                 'SUM_SENTIMENT': 'sum'}}).
                   reset_index())
 
 # groupby year and average
@@ -224,35 +233,63 @@ config.yearly_sent = (config.text.groupby(['YEAR']).
                       reset_index())
 
 # plot average sentiment for each debate
-plt.scatter(config.debates.YEAR.astype(float),
+plt.scatter(config.debates.YEAR,
             config.debates.SENTIMENT_SCORE.AVG_SENTIMENT,
             alpha=0.1)
 plt.title('Average Debate Sentiment')
 plt.ylabel('average sentiment')
 plt.xlabel('years')
 plt.grid(True)
-# plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+# plt.savefig('../images/hansard_sentiment_avg_debate.jpg')
 plt.show()
 
-# plot average sentiment for each debate
-plt.scatter(config.text.YEAR.astype(float),
-            config.text.SENTIMENT_SCORE,
+# plot sum sentiment for each debate
+plt.scatter(config.debates.YEAR,
+            config.debates.SENTIMENT_SCORE.SUM_SENTIMENT,
             alpha=0.1)
+plt.title('Debate Sentiment')
+plt.ylabel('sentiment')
+plt.xlabel('years')
+plt.grid(True)
+# plt.savefig('../images/hansard_sentiment_debate.jpg')
+plt.show()
+
+# plot average sentiment for each speech_act
+plt.scatter(config.text.YEAR, config.text.SENTIMENT_SCORE, alpha=0.1)
 plt.title('Speech Act Sentiment')
 plt.ylabel('sentiment')
 plt.xlabel('years')
 plt.grid(True)
-# plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+plt.savefig('../images/hansard_sentiment_speechact.jpg')
 plt.show()
 
-# plot average sentiment for each debate
-plt.plot(config.yearly_sent.YEAR.astype(float),
+# plot average sentiment for each speech act
+plt.plot(config.yearly_sent.YEAR,
          config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT)
-plt.title('Average Sentiment')
-plt.ylabel('sentiment')
+# add standard deviation
+fill_high = (config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT +
+             config.yearly_sent.SENTIMENT_SCORE.STD_SENTIMENT)
+fill_low = (config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT -
+            config.yearly_sent.SENTIMENT_SCORE.STD_SENTIMENT)
+plt.fill_between(config.yearly_sent.YEAR, fill_low, fill_high, alpha=0.25)
+plt.title('Average Speech Act Sentiment')
+plt.ylabel('average sentiment')
 plt.xlabel('years')
 plt.grid(True)
-# plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+plt.savefig('../images/hansard_sentiment_avg_speechact_error.jpg')
 plt.show()
-config.yearly_sent.YEAR.astype(float)
-config.yearly_sent.YEAR.unique()
+
+# # plot average sentiment for each debate
+# config.debates.plot.hexbin('YEAR', 'SUM_SENTIMENT')
+# plt.title('Average Debate Sentiment')
+# plt.ylabel('average sentiment')
+# plt.xlabel('years')
+# plt.grid(True)
+# # plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
+# plt.show()
+
+# df = pd.DataFrame(np.random.randn(1000, 2), columns=['a', 'b'])
+# df['b'] = df['b'] = df['b'] + np.arange(1000)
+# df['z'] = np.random.uniform(0, 3, 1000)
+# df.plot.hexbin(x='a', y='b', C='z', reduce_C_function=np.max, gridsize=25)
+# plt.show()

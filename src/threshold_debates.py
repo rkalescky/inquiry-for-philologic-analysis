@@ -95,6 +95,8 @@ threshold(config.path_output + 'kld1_*.npy', percent=0.10)
 threshold(config.path_output + 'kld1_*.npy', percent=0.15)
 threshold(config.path_output + 'kld1_*.npy', percent=0.20)
 threshold(config.path_output + 'kld1_*.npy', percent=0.25)
+# test if there is a bug for DC2.b
+threshold(config.path_output + 'kld1_*.npy', percent=.99)
 
 # combine tranches and remove duplicates
 config.concat_df1 = concat_timewindows(config.path_output +
@@ -109,6 +111,9 @@ config.concat_df20 = concat_timewindows(config.path_output +
                                         'DC/debates_*_0.2.txt')
 config.concat_df25 = concat_timewindows(config.path_output +
                                         'DC/debates_*_0.25.txt')
+# test if there is a bug for DC2.b
+config.concat_df99 = concat_timewindows(config.path_output +
+                                        'DC/debates_*_0.99.txt')
 
 # find overlap between timewindows for 1% tranche
 config.overlap_nums = overlap_timewindows(config.path_output +
