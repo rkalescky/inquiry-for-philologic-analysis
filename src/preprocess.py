@@ -1,6 +1,9 @@
+import numpy as np
+import pandas as pd
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
+import multiprocessing
 import enchant
 import config
 
@@ -46,9 +49,7 @@ def lemmatize_df(df):
             df.loc[index, 'LEMMAS'] = 'not string'
             continue
 
-
     return(df)
-
     # df.to_csv("/Users/alee35/land-wars-devel-data/03.lemmatized_speech_acts/membercontributions-lemmatized.tsv", sep="\t")
 
 
@@ -57,17 +58,29 @@ dictionary = enchant.Dict("en_GB")
 # lemmatizer
 lemmatizer = WordNetLemmatizer()
 
-# test corpus
-config.textlem2 = lemmatize_df(config.text2)
-# whole corpus
-config.textlem = lemmatize_df(config.text)
+# create as many processes as there are CPUs on your machine
+num_processes = multiprocessing.cpu_count()
+# calculate the chunk size as an integer
+chunk_size = int(config.text.shape[0]/num_processes)
+# works even if the df length is not evenly divisible by num_processes
+chunks = [config.text.ix[config.text.index[i:i + chunk_size]]
+          for i in range(0, config.text.shape[0], chunk_size)]
+# create our pool with `num_processes` processes
+pool = multiprocessing.Pool(processes=num_processes)
+# apply our function to each chunk in the list
+result = pool.map(lemmatize_df, chunks)
+# combine the results from our pool to a dataframe
+config.textlem = pd.DataFrame().reindex_like(config.text)
+config.textlem['LEMMAS'] = np.NaN
+for i in range(len(result)):
+    config.textlem.ix[result[i].index] = result[i]
+
 
 # write speech acts to files for triplet tagging
 for index, row in config.textlem.iterrows():
     f = '/Users/alee35/Google Drive/repos/Stanford-OpenIE-Python/hansard/debate_{}.txt'.format(index)
     with open(f, 'w') as f:
         f.write(row['LEMMAS'])
-
 
 
 # create year and decade columns
