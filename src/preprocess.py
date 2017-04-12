@@ -50,7 +50,6 @@ def lemmatize_df(df):
             continue
 
     return(df)
-    # df.to_csv("/Users/alee35/land-wars-devel-data/03.lemmatized_speech_acts/membercontributions-lemmatized.tsv", sep="\t")
 
 
 # load British English spell checker
@@ -58,8 +57,8 @@ dictionary = enchant.Dict("en_GB")
 # lemmatizer
 lemmatizer = WordNetLemmatizer()
 
-# create as many processes as there are CPUs on your machine
-num_processes = multiprocessing.cpu_count()
+# create half as many processes as there are CPUs on your machine
+num_processes = multiprocessing.cpu_count()/2
 # calculate the chunk size as an integer
 chunk_size = int(config.text.shape[0]/num_processes)
 # works even if the df length is not evenly divisible by num_processes
@@ -75,21 +74,10 @@ config.textlem['LEMMAS'] = np.NaN
 for i in range(len(result)):
     config.textlem.ix[result[i].index] = result[i]
 
+# config.textlem.to_csv("/Users/alee35/land-wars-devel-data/03.lemmatized_speech_acts/membercontributions-lemmatized.tsv", sep="\t")
 
 # write speech acts to files for triplet tagging
 for index, row in config.textlem.iterrows():
-    f = '/Users/alee35/Google Drive/repos/Stanford-OpenIE-Python/hansard/debate_{}.txt'.format(index)
-    with open(f, 'w') as f:
-        f.write(row['LEMMAS'])
-
-
-# create year and decade columns
-config.textlem['YEAR'] = config.textlem.DATE.str[:4]
-config.textlem['DECADE'] = config.textlem['YEAR'].map(lambda x: int(x) - (int(x) % 10))
-
-# groupby debates and concatenate
-config.debates = config.textlem.groupby(['YEAR', 'BILL']).aggregate({'LEMMAS': lambda x: x.str.cat(sep='. ')}).reset_index()
-for index, row in config.debates.iterrows():
     f = '/Users/alee35/Google Drive/repos/Stanford-OpenIE-Python/hansard/debate_{}.txt'.format(index)
     with open(f, 'w') as f:
         f.write(row['LEMMAS'])

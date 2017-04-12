@@ -122,7 +122,8 @@ def value_of(sentiment):
 
 
 def sentiment_score(review):
-    return sum([value_of(tag) for sentence in dict_tagged_sentences for token in sentence for tag in token[2]])
+    return sum([value_of(tag) for sentence in dict_tagged_sentences
+                for token in sentence for tag in token[2]])
 
 
 splitter = Splitter()
@@ -147,36 +148,7 @@ pos_dict = dict(zip(pos.word, pos.valence))
 # set up dictionary of sentiment valences
 dicttagger = DictionaryTagger([neg_dict, pos_dict])
 
-# try test raw speech acts
-for index, row in config.text2.iterrows():
-    # set up data structure
-    split_sentences = splitter.split(row['SPEECH_ACT'])
-    pos_tagged_sentences = postagger.pos_tag(split_sentences)
-    # tag sentences with sentiment
-    dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
-    # compute sentiment score
-    sentiment = sentiment_score(dict_tagged_sentences)
-    # print sentiment
-    config.text2.loc[index, 'SENTIMENT_SCORE'] = sentiment
-
-# try test lemmas
-for index, row in config.textlem2.iterrows():
-    # set up data structure
-    if type(row['LEMMAS']) == str:
-        split_sentences = splitter.split(row['LEMMAS'])
-    else:
-        print "Not string"
-        continue
-    # pos tag each word in the sentences
-    pos_tagged_sentences = postagger.pos_tag(split_sentences)
-    # tag sentences with sentiment
-    dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
-    # compute sentiment score
-    sentiment = sentiment_score(dict_tagged_sentences)
-    # print sentiment
-    config.textlem2.loc[index, 'SENTIMENT_SCORE'] = sentiment
-
-# try raw speech acts
+# raw speech acts
 for index, row in config.text.iterrows():
     # set up data structure
     if type(row['SPEECH_ACT']) == str:
@@ -195,68 +167,104 @@ for index, row in config.text.iterrows():
 
 # write to csv / read csv if kernel gets interrupted
 config.text.to_csv(config.path_input + 'hansard_sentiment.tsv', sep='\t')
-config.text = pd.read_csv(config.path_input + 'hansard_sentiment.tsv', sep='\t')
+config.textsent = pd.read_csv(config.path_input + 'hansard_sentiment.tsv',
+                              sep='\t')
 
-# fill sentiment scores wtih 0 if speech act wasn't a string
-config.text['SENTIMENT_SCORE'] = config.text['SENTIMENT_SCORE'].fillna(0)
+# fill sentiment scores with 0 if speech act wasn't a string
+config.textsent['SENTIMENT_SCORE'] = config.textsent['SENTIMENT_SCORE'].fillna(0)
 # replace speech acts that aren't string with 'no text'
-for index, row in config.text.iterrows():
+for index, row in config.textsent.iterrows():
     if type(row['SPEECH_ACT']) != str:
-        config.text.loc[index, 'SPEECH_ACT'] = 'no text'
+        config.textsent.loc[index, 'SPEECH_ACT'] = 'no text'
 
 # get year from date
-config.text['YEAR'] = config.text.DATE.str[:4]
+config.textsent['YEAR'] = config.textsent.DATE.str[:4]
 # convert years column to numeric
-config.text['YEAR'] = config.text['YEAR'].astype(float)
+config.textsent['YEAR'] = config.textsent['YEAR'].astype(float)
 # change years after 1908 to NaN
-for index, row in config.text.iterrows():
+for index, row in config.textsent.iterrows():
     if row['YEAR'] > 1908:
-        config.text.loc[index, 'YEAR'] = np.NaN
+        config.textsent.loc[index, 'YEAR'] = np.NaN
 # forward fill missing dates
-config.text['YEAR'] = config.text['YEAR'].fillna(method='ffill')
+config.textsent['YEAR'] = config.textsent['YEAR'].fillna(method='ffill')
 # compute decade
-config.text['DECADE'] = (config.text['YEAR'].
+config.textsent['DECADE'] = (config.textsent['YEAR'].
                          map(lambda x: int(x) - (int(x) % 10)))
 
-# groupby debates and concatenate
-config.debates = (config.text.groupby(['YEAR', 'BILL']).
+# groupby debates and concatenate, get average/sum speech act sentiments
+config.debates = (config.textsent.groupby(['YEAR', 'BILL']).
                   aggregate({'SPEECH_ACT': lambda x: x.str.cat(sep='. '),
                              'SENTIMENT_SCORE': {'AVG_SENTIMENT': 'mean',
                                                  'STD_SENTIMENT': 'std',
                                                  'SUM_SENTIMENT': 'sum'}}).
                   reset_index())
 
-# groupby year and average
-config.yearly_sent = (config.text.groupby(['YEAR']).
+# groupby year and get average sentiment for each year's worth of speech acts
+config.yearly_sent = (config.textsent.groupby(['YEAR']).
                       aggregate({'SENTIMENT_SCORE': {'AVG_SENTIMENT': 'mean',
                                                      'STD_SENTIMENT': 'std'}}).
                       reset_index())
+
+# groupby decade and get min/max sentiment speech acts
+decade_min = config.textsent.loc[config.textsent.groupby('DECADE')['SENTIMENT_SCORE'].idxmin()]
+decade_max = config.textsent.loc[config.textsent.groupby('DECADE')['SENTIMENT_SCORE'].idxmax()]
+# get all emotional words in min decades
+decade_min['EMOTIONAL_WORDS'] = 's'
+for index, row in decade_min.iterrows():
+    # set up data structure
+    if type(row['SPEECH_ACT']) == str:
+        split_sentences = splitter.split(row['SPEECH_ACT'])
+    else:
+        print "Not string"
+        continue
+    # pos tag each word in the sentences
+    pos_tagged_sentences = postagger.pos_tag(split_sentences)
+    # tag sentences with sentiment
+    dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
+    # append emotional words to a list
+    emotional_words = []
+    for sentence in dict_tagged_sentences:
+        for word in sentence:
+            if len(word[2]) > 1:
+                emotional_words.append(word)
+    decade_min.set_value(index, 'EMOTIONAL_WORDS', emotional_words)
+# get all emotional words in max decades
+decade_max['EMOTIONAL_WORDS'] = 's'
+for index, row in decade_max.iterrows():
+    # set up data structure
+    if type(row['SPEECH_ACT']) == str:
+        split_sentences = splitter.split(row['SPEECH_ACT'])
+    else:
+        print "Not string"
+        continue
+    # pos tag each word in the sentences
+    pos_tagged_sentences = postagger.pos_tag(split_sentences)
+    # tag sentences with sentiment
+    dict_tagged_sentences = dicttagger.tag(pos_tagged_sentences)
+    # append emotional words to a list
+    emotional_words = []
+    for sentence in dict_tagged_sentences:
+        for word in sentence:
+            if len(word[2]) > 1:
+                emotional_words.append(word)
+    decade_max.set_value(index, 'EMOTIONAL_WORDS', emotional_words)
+decade_min.to_csv('../data/decade_min.tsv', sep='\t')
+decade_max.to_csv('../data/decade_max.tsv', sep='\t')
 
 # plot average sentiment for each debate
 plt.scatter(config.debates.YEAR,
             config.debates.SENTIMENT_SCORE.AVG_SENTIMENT,
             alpha=0.1)
-plt.title('Average Debate Sentiment')
-plt.ylabel('average sentiment')
+plt.title('Debate')
+plt.ylabel('sentiment')
 plt.xlabel('years')
 plt.grid(True)
 # plt.savefig('../images/hansard_sentiment_avg_debate.jpg')
 plt.show()
 
-# plot sum sentiment for each debate
-plt.scatter(config.debates.YEAR,
-            config.debates.SENTIMENT_SCORE.SUM_SENTIMENT,
-            alpha=0.1)
-plt.title('Debate Sentiment')
-plt.ylabel('sentiment')
-plt.xlabel('years')
-plt.grid(True)
-# plt.savefig('../images/hansard_sentiment_debate.jpg')
-plt.show()
-
-# plot average sentiment for each speech_act
-plt.scatter(config.text.YEAR, config.text.SENTIMENT_SCORE, alpha=0.1)
-plt.title('Speech Act Sentiment')
+# plot sentiment for each speech_act
+plt.scatter(config.textsent.YEAR, config.textsent.SENTIMENT_SCORE, alpha=0.1)
+plt.title('Speech Act')
 plt.ylabel('sentiment')
 plt.xlabel('years')
 plt.grid(True)
@@ -272,24 +280,34 @@ fill_high = (config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT +
 fill_low = (config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT -
             config.yearly_sent.SENTIMENT_SCORE.STD_SENTIMENT)
 plt.fill_between(config.yearly_sent.YEAR, fill_low, fill_high, alpha=0.25)
-plt.title('Average Speech Act Sentiment')
+# add vertical lines for election years
+xcoords = [1802, 1806, 1807, 1812, 1818, 1820, 1826, 1830, 1831, 1832, 1835,
+           1837, 1841, 1847, 1852, 1857, 1859, 1865, 1868, 1874, 1880, 1885,
+           1886, 1892, 1895, 1900, 1906]
+for xc in xcoords:
+    plt.axvline(x=xc, alpha=0.5)
+plt.title('Average Yearly Speech Act')
 plt.ylabel('average sentiment')
 plt.xlabel('years')
-plt.grid(True)
+plt.grid(False)
 plt.savefig('../images/hansard_sentiment_avg_speechact_error.jpg')
 plt.show()
 
-# # plot average sentiment for each debate
-# config.debates.plot.hexbin('YEAR', 'SUM_SENTIMENT')
-# plt.title('Average Debate Sentiment')
-# plt.ylabel('average sentiment')
-# plt.xlabel('years')
-# plt.grid(True)
-# # plt.savefig('../images/fr_overlapping_debates_year_KLD1.jpg')
-# plt.show()
-
-# df = pd.DataFrame(np.random.randn(1000, 2), columns=['a', 'b'])
-# df['b'] = df['b'] = df['b'] + np.arange(1000)
-# df['z'] = np.random.uniform(0, 3, 1000)
-# df.plot.hexbin(x='a', y='b', C='z', reduce_C_function=np.max, gridsize=25)
-# plt.show()
+# plot min and max
+plt.scatter(decade_min.DECADE, decade_min.SENTIMENT_SCORE, color='r')
+plt.scatter(decade_max.DECADE, decade_max.SENTIMENT_SCORE)
+# plot average
+plt.plot(config.yearly_sent.YEAR,
+         config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT)
+# plot std
+fill_high = (config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT +
+             config.yearly_sent.SENTIMENT_SCORE.STD_SENTIMENT)
+fill_low = (config.yearly_sent.SENTIMENT_SCORE.AVG_SENTIMENT -
+            config.yearly_sent.SENTIMENT_SCORE.STD_SENTIMENT)
+plt.fill_between(config.yearly_sent.YEAR, fill_low, fill_high, alpha=0.25)
+plt.title('Emotional Extremes')
+plt.ylabel('sentiment')
+plt.xlabel('decade')
+plt.grid(True)
+plt.savefig('../images/min_max_sentiment.jpg')
+plt.show()
