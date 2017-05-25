@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer

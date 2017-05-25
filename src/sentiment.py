@@ -1,7 +1,3 @@
-import pandas as pd
-import numpy as np
-import nltk
-import matplotlib.pyplot as plt
 import config
 
 # code from http://fjavieralba.com/basic-sentiment-analysis-with-python.html

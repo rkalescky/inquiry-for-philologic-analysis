@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import config
 
 
@@ -119,6 +118,3 @@ top_years = (yearsagg_overlap[yearsagg_overlap['fraction'] > 0.95]['year'].
              values.tolist())
 tydebates = config.concat_overlap[config.concat_overlap[0].isin(top_years)]
 config.top
-
-# TODO: get top 5 speakers - get top debates for each speaker
-config.speechacts

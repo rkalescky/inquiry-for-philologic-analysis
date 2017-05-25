@@ -1,7 +1,3 @@
-import os
-import matplotlib.pyplot as plt
-import pandas as pd
-import glob2
 from wordcloud import WordCloud, STOPWORDS
 import config
 
