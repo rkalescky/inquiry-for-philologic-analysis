@@ -1,13 +1,19 @@
+<<<<<<< HEAD
+=======
+import numpy as np
+import pandas as pd
+import csv
+import nltk
+>>>>>>> 72f6e5ac64b826215028d240d52e1deee242953c
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 import multiprocessing
 import enchant
-import config
 
-# nltk.download('wordnet')
-# nltk.download('averaged_perceptron_tagger')
-
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
 
 def tag2pos(tag, returnNone=False):
     ap_tag = {'NN': wn.NOUN, 'JJ': wn.ADJ,
@@ -42,7 +48,7 @@ def lemmatize_df(df):
             lemma_string = ' '.join(lemma_list)
             df.loc[index, 'LEMMAS'] = lemma_string
         else:
-            print "Not string"
+            print str(index) + "Not string"
             df.loc[index, 'SPEECH_ACT'] = 'not string'
             df.loc[index, 'LEMMAS'] = 'not string'
             continue
@@ -55,27 +61,60 @@ dictionary = enchant.Dict("en_GB")
 # lemmatizer
 lemmatizer = WordNetLemmatizer()
 
-# create half as many processes as there are CPUs on your machine
-num_processes = multiprocessing.cpu_count()/2
+path_output = '/users/alee35/scratch/land-wars-devel-data/'
+path = '/gpfs/data/datasci/paper-m/HANSARD/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/free_seed/seed_segmented/'
+
+# create as many processes as there are CPUs on your machine
+#num_processes = multiprocessing.cpu_count()
 # calculate the chunk size as an integer
-chunk_size = int(config.text.shape[0]/num_processes)
+#chunk_size = int(text.shape[0]/num_processes)
 # works even if the df length is not evenly divisible by num_processes
-chunks = [config.text.ix[config.text.index[i:i + chunk_size]]
-          for i in range(0, config.text.shape[0], chunk_size)]
+#chunks = [text.ix[text.index[i:i + chunk_size]]
+#          for i in range(0, text.shape[0], chunk_size)]
 # create our pool with `num_processes` processes
-pool = multiprocessing.Pool(processes=num_processes)
+#pool = multiprocessing.Pool(processes=num_processes)
 # apply our function to each chunk in the list
-result = pool.map(lemmatize_df, chunks)
+#result = pool.map(lemmatize_df, chunks)
 # combine the results from our pool to a dataframe
-config.textlem = pd.DataFrame().reindex_like(config.text)
-config.textlem['LEMMAS'] = np.NaN
-for i in range(len(result)):
-    config.textlem.ix[result[i].index] = result[i]
+#textlem = pd.DataFrame().reindex_like(text)
+#textlem['LEMMAS'] = np.NaN
+#for i in range(len(result)):
+#    textlem.ix[result[i].index] = result[i]
 
-# config.textlem.to_csv("/Users/alee35/land-wars-devel-data/03.lemmatized_speech_acts/membercontributions-lemmatized.tsv", sep="\t")
 
-# write speech acts to files for triplet tagging
-for index, row in config.textlem.iterrows():
-    f = '/Users/alee35/Google Drive/repos/Stanford-OpenIE-Python/hansard/debate_{}.txt'.format(index)
-    with open(f, 'w') as f:
-        f.write(row['LEMMAS'])
+with open(path + 'membercontributions-20161026.tsv', 'r') as f:
+    text = pd.read_csv(f, sep='\t')
+
+# get year from date
+text['YEAR'] = text.DATE.str[:4]
+# convert years column to numeric
+text['YEAR'] = text['YEAR'].astype(float)
+# change years after 1908 to NaN
+for index, row in text.iterrows():
+    if row['YEAR'] > 1908:
+        text.loc[index, 'YEAR'] = np.NaN
+        # forward fill missing dates
+        text['YEAR'] = text['YEAR'].fillna(method='ffill')
+        # compute decade
+        text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+
+text.drop(['ID', 'DATE', 'DECADE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
+
+# convert integer speech acts to string
+for index, row in text.iterrows():
+    if type(row['SPEECH_ACT']) != str:
+        text.loc[index, 'SPEECH_ACT'] = 'Not Text'
+
+# groupby year, decade, bill, and concatenate speech act with a space
+text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+
+# append speech acts to text
+with open(path_seed + 'four_corpus_and_other_cols.txt', 'r') as f:
+    seed = pd.read_csv(f, sep='\t', header=None, names=['BILL','YEAR','SPEECH_ACT'])
+text = pd.concat([text, seed]).reset_index(drop=True)
+
+# lemmatize text
+textlem = lemmatize_df(text)
+
+textlem.to_csv(path_output + "cleanbills-20170517.tsv", sep="\t", header=True, index=False)
