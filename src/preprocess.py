@@ -1,14 +1,9 @@
-<<<<<<< HEAD
-=======
 import numpy as np
 import pandas as pd
-import csv
 import nltk
->>>>>>> 72f6e5ac64b826215028d240d52e1deee242953c
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
-import multiprocessing
 import enchant
 
 nltk.download('wordnet')
