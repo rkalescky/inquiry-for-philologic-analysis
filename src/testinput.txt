@@ -1,0 +1,2 @@
+X   X   This is my stopword list.
+X   X   England is a good country that has a Parliament.
