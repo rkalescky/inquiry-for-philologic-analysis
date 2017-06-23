@@ -1,14 +1,16 @@
 import numpy as np
 import pandas as pd
+import re
 import nltk
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
+from nltk.stem.porter import *
 import enchant
 
-nltk.download('wordnet')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('punkt')
 
 
 def tag2pos(tag, returnNone=False):
@@ -54,8 +56,11 @@ def lemmatize_df(df):
 
 # load British English spell checker
 dictionary = enchant.Dict("en_GB")
-# lemmatizer
+# load stemmer and lemmatizer
+stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
+
+# test lemmatizer and stemmer
 word = ['Germans']
 word2 = ['apple']
 word_pos = pos_tag(word)[0][1]
@@ -68,21 +73,16 @@ lemmatizer.lemmatize('Germany', 'n')
 lemmatizer.lemmatize('Germanic', 'a')
 lemmatizer.lemmatize('German', 'n')
 lemmatizer.lemmatize('Germans')
-lemmatizer.lemmatize('apple')
-lemmatizer.lemmatize('apples')
 lemmatizer.lemmatize('bicycle')
 lemmatizer.lemmatize('bicycles')
 lemmatizer.lemmatize('bikes')
 lemmatizer.lemmatize('bicycling')
-
-from nltk.stem.porter import *
-stemmer = PorterStemmer()
 stemmer.stem('German')
 stemmer.stem('Germans')
 stemmer.stem('Germanic')
 stemmer.stem('Germany')
 stemmer.stem('bicycle')
-stemmer.stem('bicycle')
+stemmer.stem('bicycles')
 stemmer.stem('bikes')
 stemmer.stem('bicycling')
 
@@ -108,22 +108,29 @@ path_seed = '/gpfs/data/datasci/paper-m/free_seed/seed_segmented/'
 #    textlem.ix[result[i].index] = result[i]
 
 
-with open(path + 'membercontributions-20161026.tsv', 'r') as f:
+with open('./data/membercontributions_test.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 
 # get year from date
 text['YEAR'] = text.DATE.str[:4]
 # convert years column to numeric
 text['YEAR'] = text['YEAR'].astype(float)
-# change years after 1908 to NaN
+# process dates
 for index, row in text.iterrows():
+    # fix years after 1908
     if row['YEAR'] > 1908:
         text.loc[index, 'YEAR'] = np.NaN
         # forward fill missing dates
         text['YEAR'] = text['YEAR'].fillna(method='ffill')
-        # compute decade
-        text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+    # compute decade
+    text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+    # remove non-alpha numeric characters from bill titles
+    text['BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9]', '', str(x)))
 
+# create debate_id
+text['DEBATE_ID'] = text['BILL'] + ' ' + text['ID']
+
+# drop some columns
 text.drop(['ID', 'DATE', 'DECADE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
 
 # convert integer speech acts to string
