@@ -22,13 +22,13 @@ def tag2pos(tag, returnNone=False):
         return None if returnNone else ''
 
 
-def lemmatize_df(df):
+def lemstem_df(df, method):
     # lemmatize speech acts
     for index, row in df.iterrows():
         # initialize lemma list
-        lemma_list = []
+        lemstem_list = []
         # tokenize word_pos
-        if type(row['SPEECH_ACT']) == str:
+        if type(row['SPEECH_ACT']) == str or type(row['SPEECH_ACT']) == unicode:
             tokens = word_tokenize(row['SPEECH_ACT'])
             alpha_tokens = [token for token in tokens if token.isalpha()]
             spellchecked_tokens = [token for token in alpha_tokens
@@ -37,16 +37,20 @@ def lemmatize_df(df):
             for tagged_token in tagged_tokens:
                 word = str(tagged_token[0])
                 word_pos = tagged_token[1]
-                word_pos_morphed = tag2pos(word_pos)
-                if word_pos_morphed is not '':
-                    lemma = lemmatizer.lemmatize(word, word_pos_morphed)
-                else:
-                    lemma = lemmatizer.lemmatize(word)
-                lemma_list.append(lemma)
-            lemma_string = ' '.join(lemma_list)
-            df.loc[index, 'LEMMAS'] = lemma_string
+                if method == 'lemma':
+                    word_pos_morphed = tag2pos(word_pos)
+                    if word_pos_morphed is not '':
+                        lemma = lemmatizer.lemmatize(word, word_pos_morphed)
+                    else:
+                        lemma = lemmatizer.lemmatize(word)
+                    lemstem_list.append(lemma)
+                elif method == 'stem':
+                    stem = stemmer.stem(word)
+                    lemstem_list.append(stem)
+            lemstem_string = ' '.join(lemstem_list)
+            df.loc[index, 'CLEAN_TEXT'] = lemstem_string
         else:
-            print str(index) + "Not string"
+            print str(index) + " Not string"
             df.loc[index, 'SPEECH_ACT'] = 'not string'
             df.loc[index, 'LEMMAS'] = 'not string'
             continue
@@ -125,7 +129,7 @@ for index, row in text.iterrows():
     # compute decade
     text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
     # remove non-alpha numeric characters from bill titles
-    text['BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9]', '', str(x)))
+    text['BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
 
 # create debate_id
 text['DEBATE_ID'] = text['BILL'] + ' ' + text['ID']
@@ -142,11 +146,24 @@ for index, row in text.iterrows():
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 
 # append speech acts to text
-with open(path_seed + 'four_corpus_and_other_cols.txt', 'r') as f:
-    seed = pd.read_csv(f, sep='\t', header=None, names=['BILL','YEAR','SPEECH_ACT'])
+with open('./data/four_corpus.txt', 'r') as f:
+    seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
+
+# decode unicode string with unicode codec
+for index, row in seed.iterrows():
+    row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+
+# make metadataframe for seeds
+seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
+                'Seed3-Richmond', 'Seed4-Bessborough']
+seed['YEAR'] = [1884, 1845, 1882, 1881]
+seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
+
+# append to end of text df
 text = pd.concat([text, seed]).reset_index(drop=True)
 
 # lemmatize text
-textlem = lemmatize_df(text)
+textlem = lemstem_df(text)
 
-textlem.to_csv(path_output + "cleanbills-20170517.tsv", sep="\t", header=True, index=False)
+textlem.to_csv(path_output + "cleanbills-20170623.tsv",
+               sep="\t", header=True, index=False)
