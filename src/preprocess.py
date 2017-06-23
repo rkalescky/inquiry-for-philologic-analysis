@@ -163,7 +163,7 @@ seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
 text = pd.concat([text, seed]).reset_index(drop=True)
 
 # lemmatize text
-textlem = lemstem_df(text)
+textlem = lemstem_df(text, 'stem')
 
 textlem.to_csv(path_output + "cleanbills-20170623.tsv",
                sep="\t", header=True, index=False)
