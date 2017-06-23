@@ -10,6 +10,7 @@ nltk.download('wordnet')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
 
+
 def tag2pos(tag, returnNone=False):
     ap_tag = {'NN': wn.NOUN, 'JJ': wn.ADJ,
               'VB': wn.VERB, 'RB': wn.ADV}
@@ -55,6 +56,35 @@ def lemmatize_df(df):
 dictionary = enchant.Dict("en_GB")
 # lemmatizer
 lemmatizer = WordNetLemmatizer()
+word = ['Germans']
+word2 = ['apple']
+word_pos = pos_tag(word)[0][1]
+word_pos_morphed = tag2pos(word_pos)
+word_pos2 = pos_tag(word2)[0][1]
+word_pos_morphed2 = tag2pos(word_pos2)
+lemmatizer.lemmatize(str(word), word_pos_morphed)
+lemmatizer.lemmatize(str(word2), word_pos_morphed2)
+lemmatizer.lemmatize('Germany', 'n')
+lemmatizer.lemmatize('Germanic', 'a')
+lemmatizer.lemmatize('German', 'n')
+lemmatizer.lemmatize('Germans')
+lemmatizer.lemmatize('apple')
+lemmatizer.lemmatize('apples')
+lemmatizer.lemmatize('bicycle')
+lemmatizer.lemmatize('bicycles')
+lemmatizer.lemmatize('bikes')
+lemmatizer.lemmatize('bicycling')
+
+from nltk.stem.porter import *
+stemmer = PorterStemmer()
+stemmer.stem('German')
+stemmer.stem('Germans')
+stemmer.stem('Germanic')
+stemmer.stem('Germany')
+stemmer.stem('bicycle')
+stemmer.stem('bicycle')
+stemmer.stem('bikes')
+stemmer.stem('bicycling')
 
 path_output = '/users/alee35/scratch/land-wars-devel-data/'
 path = '/gpfs/data/datasci/paper-m/HANSARD/speeches_dates/'
