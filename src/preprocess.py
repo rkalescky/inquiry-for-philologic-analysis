@@ -112,7 +112,7 @@ path_seed = '/gpfs/data/datasci/paper-m/free_seed/seed_segmented/'
 #    textlem.ix[result[i].index] = result[i]
 
 
-with open('./data/membercontributions_test.tsv', 'r') as f:
+with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 
 # get year from date
@@ -140,13 +140,13 @@ text.drop(['ID', 'DATE', 'DECADE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=Tr
 # convert integer speech acts to string
 for index, row in text.iterrows():
     if type(row['SPEECH_ACT']) != str:
-        text.loc[index, 'SPEECH_ACT'] = 'Not Text'
+        text.loc[index, 'SPEECH_ACT'] = 'not text'
 
 # groupby year, decade, bill, and concatenate speech act with a space
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 
 # append speech acts to text
-with open('./data/four_corpus.txt', 'r') as f:
+with open(path_seed + 'four_corpus.txt', 'r') as f:
     seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
 
 # decode unicode string with unicode codec
