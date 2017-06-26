@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import re
-import nltk
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import *
+import multiprocessing
 import enchant
 
 # nltk.download('wordnet')
@@ -94,24 +94,6 @@ path_output = '/users/alee35/scratch/land-wars-devel-data/'
 path = '/gpfs/data/datasci/paper-m/HANSARD/speeches_dates/'
 path_seed = '/gpfs/data/datasci/paper-m/free_seed/seed_segmented/'
 
-# create as many processes as there are CPUs on your machine
-#num_processes = multiprocessing.cpu_count()
-# calculate the chunk size as an integer
-#chunk_size = int(text.shape[0]/num_processes)
-# works even if the df length is not evenly divisible by num_processes
-#chunks = [text.ix[text.index[i:i + chunk_size]]
-#          for i in range(0, text.shape[0], chunk_size)]
-# create our pool with `num_processes` processes
-#pool = multiprocessing.Pool(processes=num_processes)
-# apply our function to each chunk in the list
-#result = pool.map(lemmatize_df, chunks)
-# combine the results from our pool to a dataframe
-#textlem = pd.DataFrame().reindex_like(text)
-#textlem['LEMMAS'] = np.NaN
-#for i in range(len(result)):
-#    textlem.ix[result[i].index] = result[i]
-
-
 with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 
@@ -162,8 +144,26 @@ seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
 # append to end of text df
 text = pd.concat([text, seed]).reset_index(drop=True)
 
-# lemmatize text
-textlem = lemstem_df(text, 'stem')
+# lemmatize/stem text
+# textlem = lemstem_df(text, 'stem')
 
-textlem.to_csv(path_output + "cleanbills-20170623.tsv",
+# parallelize lemmatize/stem text
+# create as many processes as there are CPUs on your machine
+num_processes = multiprocessing.cpu_count()
+# calculate the chunk size as an integer
+chunk_size = int(text.shape[0]/num_processes)
+# works even if the df length is not evenly divisible by num_processes
+chunks = [text.ix[text.index[i:i + chunk_size]]
+          for i in range(0, text.shape[0], chunk_size)]
+# create our pool with `num_processes` processes
+pool = multiprocessing.Pool(processes=num_processes)
+# apply our function to each chunk in the list
+result = pool.map(lemstem_df, chunks)
+# combine the results from our pool to a dataframe
+textlem = pd.DataFrame().reindex_like(text)
+textlem['LEMMAS'] = np.NaN
+for i in range(len(result)):
+    textlem.ix[result[i].index] = result[i]
+
+textlem.to_csv(path_output + "cleanbills-20170626.tsv",
                sep="\t", header=True, index=False)
