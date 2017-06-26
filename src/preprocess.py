@@ -127,7 +127,7 @@ for index, row in text.iterrows():
         # forward fill missing dates
         text['YEAR'] = text['YEAR'].fillna(method='ffill')
     # compute decade
-    text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+#    text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
     # remove non-alpha numeric characters from bill titles
     text['BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
 
@@ -135,7 +135,7 @@ for index, row in text.iterrows():
 text['DEBATE_ID'] = text['BILL'] + ' ' + text['ID']
 
 # drop some columns
-text.drop(['ID', 'DATE', 'DECADE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
+text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
 
 # convert integer speech acts to string
 for index, row in text.iterrows():
