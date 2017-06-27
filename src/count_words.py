@@ -82,6 +82,6 @@ plt.legend([plt1, plt2, plt3, plt4, plt5],
 plt.semilogx()
 plt.xlabel('max # documents')
 plt.ylabel('# unique words')
-plt.savefig('images/nr_words_vs_max_docs.png', dpi=150)
+plt.savefig('../images/nr_words_vs_max_docs.png', dpi=150)
 plt.show()
 plt.close()
