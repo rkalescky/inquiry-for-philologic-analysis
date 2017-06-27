@@ -50,9 +50,9 @@ def lemstem_df(df, method):
             lemstem_string = ' '.join(lemstem_list)
             df.loc[index, 'CLEAN_TEXT'] = lemstem_string
         else:
-            print str(index) + " Not string"
+            print(str(index) + " Not string")
             df.loc[index, 'SPEECH_ACT'] = 'not string'
-            df.loc[index, 'LEMMAS'] = 'not string'
+            df.loc[index, 'CLEAN_TEXT'] = 'not string'
             continue
 
     return(df)
@@ -148,6 +148,11 @@ text = pd.concat([text, seed]).reset_index(drop=True)
 # textlem = lemstem_df(text, 'stem')
 
 # parallelize lemmatize/stem text
+def multi_run_wrapper(args):
+    '''
+    function to pass multiple arguments to function in pool.map()
+    '''
+    return lemstem_df(*args)
 # create as many processes as there are CPUs on your machine
 num_processes = multiprocessing.cpu_count()
 # calculate the chunk size as an integer
@@ -158,10 +163,10 @@ chunks = [text.ix[text.index[i:i + chunk_size]]
 # create our pool with `num_processes` processes
 pool = multiprocessing.Pool(processes=num_processes)
 # apply our function to each chunk in the list
-result = pool.map(lemstem_df, chunks)
+result = pool.map(multi_run_wrapper, [chunks, 'stem'])
 # combine the results from our pool to a dataframe
 textlem = pd.DataFrame().reindex_like(text)
-textlem['LEMMAS'] = np.NaN
+textlem['CLEAN_TEXT'] = np.NaN
 for i in range(len(result)):
     textlem.ix[result[i].index] = result[i]
 
