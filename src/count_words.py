@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
