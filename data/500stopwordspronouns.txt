@@ -1,4 +1,4 @@
-Henley
+henley
 hume 
 montrose
 congo 
@@ -75,8 +75,8 @@ frere
 bartle
 david
 natal
-Zulus
-Garnet
+zulus
+garnet
 chelmsford 
 cetewayo 
 shepstone 
@@ -95,7 +95,7 @@ indies
 france 
 rajah
 madras
-Calcutta
+calcutta
 european 
 united states 
 americans 
@@ -112,15 +112,15 @@ southampton
 natal 
 straits 
 singapore 
-Englishmen
-Indians
+englishmen
+indians
 englishman 
 nova scotia 
 quebec 
 americans 
 canadians 
 venezuela 
-West indies 
+west indies 
 molton 
 september 
 october 
@@ -173,9 +173,9 @@ harry
 isaacson
 dewar
 hammersmith
-Norris
-Bromley
-Whitechapel
+norris
+bromley
+whitechapel
 whitehaven 
 austria 
 france 
@@ -192,8 +192,8 @@ summers
 darlington
 norman 
 huddersfield
-Andrews
-Pease
+andrews
+pease
 brentford 
 aldershot 
 easter 
@@ -217,7 +217,7 @@ suez
 lesseps 
 khedive 
 isthmus 
-October
+october
 september 
 roche 
 rosebery 
@@ -231,7 +231,7 @@ sundays
 constantinople 
 crete
 turks
-Christians
+christians
 ottoman 
 berlin 
 bulgaria 
@@ -248,25 +248,25 @@ mason
 hicks-beach 
 polish
 paris 
-Sutherland
+sutherland
 skye 
 stornoway 
 shaw 
 cross 
-Ipswich
-Gregory
-Burnley
+ipswich
+gregory
+burnley
 jesse 
-Randolph
-Stockport
+randolph
+stockport
 monk 
 greece 
 ionian 
 jersey
-Alfred
+alfred
 greeks 
 corfu
-Athens
+athens
 davies 
 crawley 
 guernsey 
@@ -281,7 +281,7 @@ alexander
 elgin 
 perth 
 ayr
-Ayrshire
+ayrshire
 aberdeenshire 
 perthshire
 ryan 
