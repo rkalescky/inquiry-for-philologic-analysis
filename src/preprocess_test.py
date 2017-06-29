@@ -170,5 +170,10 @@ textlem['CLEAN_TEXT'] = np.NaN
 for i in range(len(result)):
     textlem.ix[result[i].index] = result[i]
 
+# decode utf-8
+for index, row in textlem.iterrows():
+    row['SPEECH_ACT'] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
+    row['CLEAN_TEXT'] = row['CLEAN_TEXT'].decode('utf-8', 'ignore').decode('utf-8', 'ignore')
+
 textlem.to_csv(path_output + "cleanbills-20170626_test.tsv",
-               sep="\t", header=True, index=False)
+               sep="\t", header=True, index=False, encoding='utf-8')
