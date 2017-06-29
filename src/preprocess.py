@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import re
+from functools import partial
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
@@ -64,35 +65,10 @@ dictionary = enchant.Dict("en_GB")
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
 
-# test lemmatizer and stemmer
-word = ['Germans']
-word2 = ['apple']
-word_pos = pos_tag(word)[0][1]
-word_pos_morphed = tag2pos(word_pos)
-word_pos2 = pos_tag(word2)[0][1]
-word_pos_morphed2 = tag2pos(word_pos2)
-lemmatizer.lemmatize(str(word), word_pos_morphed)
-lemmatizer.lemmatize(str(word2), word_pos_morphed2)
-lemmatizer.lemmatize('Germany', 'n')
-lemmatizer.lemmatize('Germanic', 'a')
-lemmatizer.lemmatize('German', 'n')
-lemmatizer.lemmatize('Germans')
-lemmatizer.lemmatize('bicycle')
-lemmatizer.lemmatize('bicycles')
-lemmatizer.lemmatize('bikes')
-lemmatizer.lemmatize('bicycling')
-stemmer.stem('German')
-stemmer.stem('Germans')
-stemmer.stem('Germanic')
-stemmer.stem('Germany')
-stemmer.stem('bicycle')
-stemmer.stem('bicycles')
-stemmer.stem('bikes')
-stemmer.stem('bicycling')
-
+# set input and output paths
 path_output = '/users/alee35/scratch/land-wars-devel-data/'
-path = '/gpfs/data/datasci/paper-m/HANSARD/speeches_dates/'
-path_seed = '/gpfs/data/datasci/paper-m/free_seed/seed_segmented/'
+path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/data/seed'
 
 with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
@@ -123,6 +99,7 @@ text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
 for index, row in text.iterrows():
     if type(row['SPEECH_ACT']) != str:
         text.loc[index, 'SPEECH_ACT'] = 'not text'
+    row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
 
 # groupby year, decade, bill, and concatenate speech act with a space
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
@@ -148,11 +125,6 @@ text = pd.concat([text, seed]).reset_index(drop=True)
 # textlem = lemstem_df(text, 'stem')
 
 # parallelize lemmatize/stem text
-def multi_run_wrapper(args):
-    '''
-    function to pass multiple arguments to function in pool.map()
-    '''
-    return lemstem_df(*args)
 # create as many processes as there are CPUs on your machine
 num_processes = multiprocessing.cpu_count()
 # calculate the chunk size as an integer
@@ -160,15 +132,21 @@ chunk_size = int(text.shape[0]/num_processes)
 # works even if the df length is not evenly divisible by num_processes
 chunks = [text.ix[text.index[i:i + chunk_size]]
           for i in range(0, text.shape[0], chunk_size)]
+
 # create our pool with `num_processes` processes
 pool = multiprocessing.Pool(processes=num_processes)
+# partial with fixed second argument
+lemstem_df_par = partial(lemstem_df, method='stem')
 # apply our function to each chunk in the list
-result = pool.map(multi_run_wrapper, [chunks, 'stem'])
+result = pool.map(lemstem_df_par, chunks)
 # combine the results from our pool to a dataframe
 textlem = pd.DataFrame().reindex_like(text)
 textlem['CLEAN_TEXT'] = np.NaN
 for i in range(len(result)):
     textlem.ix[result[i].index] = result[i]
 
+for index, row in textlem.iterrows():
+    row['SPEECH_ACT'] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
+
 textlem.to_csv(path_output + "cleanbills-20170626.tsv",
-               sep="\t", header=True, index=False)
+               sep="\t", header=True, index=False, encoding='utf-8')
