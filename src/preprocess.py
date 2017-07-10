@@ -148,5 +148,5 @@ for i in range(len(result)):
 for index, row in textlem.iterrows():
     row['SPEECH_ACT'] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
 
-textlem.to_csv(path_output + "cleanbills-20170626.tsv",
+textlem.to_csv(path_output + "cleanbills-20170710.tsv",
                sep="\t", header=True, index=False, encoding='utf-8')
