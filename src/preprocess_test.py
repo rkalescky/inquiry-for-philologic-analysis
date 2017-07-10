@@ -7,7 +7,6 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import *
 import multiprocessing
-from multiprocessing.dummy import Pool as ThreadPool
 import enchant
 
 # nltk.download('wordnet')
@@ -96,11 +95,11 @@ path_output = '/users/alee35/scratch/land-wars-devel-data/'
 path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
 path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 
-path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
-with open(path_local + 'membercontributions_test.tsv', 'r') as f:
+with open(path + 'membercontributions_test.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 
 # get year from date
@@ -135,7 +134,7 @@ for index, row in text.iterrows():
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 
 # append speech acts to text
-with open(path_seed_local + 'four_corpus.txt', 'r') as f:
+with open(path_seed + 'four_corpus.txt', 'r') as f:
     seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
 
 # decode unicode string with unicode codec
@@ -178,5 +177,5 @@ for i in range(len(result)):
 for index, row in textlem.iterrows():
     row['SPEECH_ACT'] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
 
-textlem.to_csv(path_output_local + "cleanbills-20170629_test.tsv",
+textlem.to_csv(path_output + "cleanbills-20170629_test.tsv",
                sep="\t", header=True, index=False, encoding='utf-8')
