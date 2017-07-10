@@ -7,6 +7,7 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import *
 import multiprocessing
+from multiprocessing.dummy import Pool as ThreadPool
 import enchant
 
 # nltk.download('wordnet')
