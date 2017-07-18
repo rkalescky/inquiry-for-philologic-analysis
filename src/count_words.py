@@ -36,7 +36,7 @@ df.replace(np.nan, '', regex=True, inplace=True)
 # replace non string or unicode speech acts with ''
 for index, row in df.iterrows():
     if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
-        df.loc[index, 'SPEECH+_ACT'] = ''
+        df.loc[index, 'SPEECH_ACT'] = ''
 # prepare the corpus
 corpus = list(df['SPEECH_ACT'])
 
