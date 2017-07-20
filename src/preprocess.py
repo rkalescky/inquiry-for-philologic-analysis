@@ -14,6 +14,11 @@ import enchant
 # nltk.download('punkt')
 
 
+def replace_from_dict(dict, tokens):
+    replaced = [str(dict.get(token, token)) for token in tokens]
+    return(replaced)
+
+
 def tag2pos(tag, returnNone=False):
     ap_tag = {'NN': wn.NOUN, 'JJ': wn.ADJ,
               'VB': wn.VERB, 'RB': wn.ADV}
@@ -32,28 +37,27 @@ def lemstem_df(df, method):
         if type(row['SPEECH_ACT']) == str or type(row['SPEECH_ACT']) == unicode:
             tokens = word_tokenize(row['SPEECH_ACT'])
             alpha_tokens = [token for token in tokens if token.isalpha()]
-            spellchecked_tokens = [token for token in alpha_tokens
-                                   if dictionary.check(token)]
+            spellchecked_tokens = replace_from_dict(spell_dict, alpha_tokens)
             tagged_tokens = pos_tag(spellchecked_tokens)
-            for tagged_token in tagged_tokens:
-                word = str(tagged_token[0])
-                word_pos = tagged_token[1]
-                if method == 'lemma':
+            if method == 'stem':
+                lemstem_list = replace_from_dict(stem_dict, spellchecked_tokens)
+            elif method == 'lemma':
+                for tagged_token in tagged_tokens:
+                    word = str(tagged_token[0])
+                    word_pos = tagged_token[1]
                     word_pos_morphed = tag2pos(word_pos)
                     if word_pos_morphed is not '':
                         lemma = lemmatizer.lemmatize(word, word_pos_morphed)
                     else:
                         lemma = lemmatizer.lemmatize(word)
                     lemstem_list.append(lemma)
-                elif method == 'stem':
-                    stem = stemmer.stem(word)
-                    lemstem_list.append(stem)
+
             lemstem_string = ' '.join(lemstem_list)
             df.loc[index, 'CLEAN_TEXT'] = lemstem_string
         else:
             print(str(index) + " Not string")
-            df.loc[index, 'SPEECH_ACT'] = 'not string'
-            df.loc[index, 'CLEAN_TEXT'] = 'not string'
+            df.loc[index, 'SPEECH_ACT'] = ''
+            df.loc[index, 'CLEAN_TEXT'] = ''
             continue
 
     return(df)
@@ -148,5 +152,5 @@ for i in range(len(result)):
 for index, row in textlem.iterrows():
     row['SPEECH_ACT'] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
 
-textlem.to_csv(path_output + "cleanbills-20170710.tsv",
+textlem.to_csv(path_output + "cleanbills-20170720.tsv",
                sep="\t", header=True, index=False, encoding='utf-8')
