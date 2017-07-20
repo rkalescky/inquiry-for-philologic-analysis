@@ -47,8 +47,6 @@ def lemstem_df(df, method):
         if type(row['SPEECH_ACT']) == str or type(row['SPEECH_ACT']) == unicode:
             tokens = word_tokenize(row['SPEECH_ACT'])
             alpha_tokens = [token for token in tokens if token.isalpha()]
-#            spellchecked_tokens = [token for token in alpha_tokens
-#                                   if dictionary.check(token)]
             spellchecked_tokens = replace_from_dict(spell_dict, alpha_tokens)
             tagged_tokens = pos_tag(spellchecked_tokens)
             if method == 'stem':
@@ -82,9 +80,12 @@ stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
 
 # set the paths
-path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+path_output = '/users/alee35/scratch/land-wars-devel-data/'
+path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
+# path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+# path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+# path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # load the raw data to a dataframe
 with open(path_local + 'membercontributions_test.tsv', 'r') as f:
@@ -193,5 +194,5 @@ for i in range(len(result)):
 for index, row in textlem.iterrows():
     row['SPEECH_ACT'] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
 
-textlem.to_csv(path_output + "cleanbills-20170718_test.tsv",
+textlem.to_csv(path_output_local + "cleanbills-20170718_test.tsv",
                sep="\t", header=True, index=False, encoding='utf-8')
