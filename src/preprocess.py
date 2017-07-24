@@ -5,7 +5,7 @@ from functools import partial
 from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
-from nltk.stem.porter import *
+from nltk.stem.snowball import SnowballStemmer
 import multiprocessing
 import enchant
 
@@ -66,7 +66,7 @@ def lemstem_df(df, method):
 # load British English spell checker
 dictionary = enchant.Dict("en_GB")
 # load stemmer and lemmatizer
-stemmer = PorterStemmer()
+stemmer = SnowballStemmer('english')
 lemmatizer = WordNetLemmatizer()
 
 # set input and output paths
