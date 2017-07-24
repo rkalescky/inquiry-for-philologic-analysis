@@ -32,7 +32,7 @@ path_output = '/users/alee35/code/inquiry-for-philologic-analysis/images/'
 # path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/images/'
 
 # read the data file
-df = pd.read_csv(path_local + 'membercontributions-20161026.tsv',
+df = pd.read_csv(path + 'membercontributions-20161026.tsv',
                  delimiter='\t', usecols=[5])
 # replace nans with empty string
 df.replace(np.nan, '', regex=True, inplace=True)

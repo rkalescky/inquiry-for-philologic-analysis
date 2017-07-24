@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -C intel
-#SBATCH -n 1 
+#SBATCH -n 4 
 #SBATCH -t 48:00:00
 #SBATCH --mem=126G
 
