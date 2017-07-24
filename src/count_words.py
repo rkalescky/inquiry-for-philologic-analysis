@@ -26,10 +26,10 @@ lemmatizer = WordNetLemmatizer()
 stemmer = PorterStemmer()
 
 
-path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
-path_output = '/users/alee35/code/inquiry-for-philologic-analysis/images/'
-# path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-# path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/images/'
+# path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+# path_output = '/users/alee35/code/inquiry-for-philologic-analysis/images/'
+path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/images/'
 
 # read the data file
 df = pd.read_csv(path + 'membercontributions-20161026.tsv',
@@ -146,28 +146,27 @@ corpus = list(df['SPEECH_ACT'])
 # plt.close()
 
 
-vectorizer = CountVectorizer()
-vec = vectorizer.fit_transform(corpus)
-# total number of words in each document
-total_nr_words = vec.toarray().sum()
-print(total_nr_words)
-# list of all words
-words = vectorizer.get_feature_names()
-# remove words with special characters and numbers in them
-words_nonr = [word for word in words if word.isalpha()]
-alpha_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_nonr]
-nr_words_alpha = vec[:, alpha_idx].sum()
-# correctly spelled english words
-words_spell = [word for word in words_nonr if dictionary.check(word)]
-spell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_spell]
-nr_words_spell = vec[:, spell_idx].sum()
-# incorrectly spelled english words
-words_misspell = [word for word in words_nonr if dictionary.check(word) is False]
-misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
-nr_words_misspell = vec[:, misspell_idx].sum()
-
-print('total nr. words: ' + str(len(words)))
-print('nr. words without special characters: ' + str(len(words_nonr)))
-print('nr. correctly spelled words: ' + str(len(words_spell)))
-print('nr. incorrectly spelled words: ' + str(len(words_misspell)))
-print('fr. incorrectly spelled words: ' + str(float(len(words_misspell))/len(words_nonr)))
+# vectorizer = CountVectorizer()
+# vec = vectorizer.fit_transform(corpus)
+# # total number of words in each document
+# total_nr_words = vec.toarray().sum()
+# # list of all words
+# words = vectorizer.get_feature_names()
+# # remove words with special characters and numbers in them
+# words_nonr = [word for word in words if word.isalpha()]
+# alpha_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_nonr]
+# nr_words_alpha = vec[:, alpha_idx].sum()
+# # correctly spelled english words
+# # words_spell = [word for word in words_nonr if dictionary.check(word)]
+# # spell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_spell]
+# # nr_words_spell = vec[:, spell_idx].sum()
+# # incorrectly spelled english words
+# words_misspell = [word for word in words_nonr if dictionary.check(word) is False]
+# misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
+# nr_words_misspell = vec[:, misspell_idx].sum()
+#
+# print('total nr. words: ' + str(len(words)))
+# print('nr. words without special characters: ' + str(len(words_nonr)))
+# print('nr. correctly spelled words: ' + str(len(words_spell)))
+# print('nr. incorrectly spelled words: ' + str(len(words_misspell)))
+# print('fr. incorrectly spelled words: ' + str(float(len(words_misspell))/len(words_nonr)))
