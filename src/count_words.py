@@ -18,6 +18,11 @@ class LemmaTokenizer(object):
         return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
 
+def replace_from_dict(dict, tokens):
+    replaced = [str(dict.get(token, token)) for token in tokens]
+    return(replaced)
+
+
 # load pyenchant english dictionary
 dictionary = enchant.Dict("en_GB")
 # load nltk lemmatizer
@@ -32,7 +37,7 @@ path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/d
 path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/images/'
 
 # read the data file
-df = pd.read_csv(path + 'membercontributions-20161026.tsv',
+df = pd.read_csv(path_local + 'membercontributions_test.tsv',
                  delimiter='\t', usecols=[5])
 # replace nans with empty string
 df.replace(np.nan, '', regex=True, inplace=True)
@@ -103,30 +108,30 @@ corpus = list(df['SPEECH_ACT'])
 # nr_words_spell = np.zeros(len(nr_docs))
 # nr_words_misspell = np.zeros(len(nr_docs))
 
-# # get total number of words
-# for i in range(len(nr_docs)):
-#     vectorizer = CountVectorizer(max_df=max_df[i])
-#     vec = vectorizer.fit_transform(corpus)
-#     # total number of words in each document
-#     total_nr_words[i] = vec.toarray().sum()
-#     print(total_nr_words[i])
-#     # list of all words
-#     words = vectorizer.get_feature_names()
-#     # remove words with special characters and numbers in them
-#     words_nonr = [word for word in words if word.isalpha()]
-#     alpha_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_nonr]
-#     nr_words_alpha[i] = vec[:, alpha_idx].sum()
-#     # correctly spelled english words
-#     words_spell = [word for word in words_nonr if dictionary.check(word)]
-#     spell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_spell]
-#     nr_words_spell[i] = vec[:, spell_idx].sum()
-#     # incorrectly spelled english words
-#     words_misspell = [word for word in words_nonr if dictionary.check(word) is False]
-#     misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
-#     nr_words_misspell[i] = vec[:, misspell_idx].sum()
+# get total number of words
+for i in range(len(nr_docs)):
+    vectorizer = CountVectorizer(max_df=max_df[i])
+    vec = vectorizer.fit_transform(corpus)
+    # total number of words in each document
+    # total_nr_words[i] = vec.toarray().sum()
+    # print(total_nr_words[i])
+    # list of all words
+    words = vectorizer.get_feature_names()
+    # remove words with special characters and numbers in them
+    words_nonr = [word for word in words if word.isalpha()]
+    alpha_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_nonr]
+    nr_words_alpha[i] = vec[:, alpha_idx].sum()
+    # correctly spelled english words
+    words_spell = [word for word in words_nonr if dictionary.check(word)]
+    spell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_spell]
+    nr_words_spell[i] = vec[:, spell_idx].sum()
+    # incorrectly spelled english words
+    words_misspell = [word for word in words_nonr if dictionary.check(word) is False]
+    misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
+    nr_words_misspell[i] = vec[:, misspell_idx].sum()
 
-#     print(nr_docs[i], total_nr_words[i], nr_words_alpha[i],
-#           nr_words_spell[i], nr_words_misspell[i])
+    print(nr_docs[i], nr_words_alpha[i],
+          nr_words_spell[i], nr_words_misspell[i])
 
 # # cumulative words plot
 # # plt1, = plt.plot(nr_docs, total_nr_words)
@@ -149,24 +154,34 @@ corpus = list(df['SPEECH_ACT'])
 # vectorizer = CountVectorizer()
 # vec = vectorizer.fit_transform(corpus)
 # # total number of words in each document
-# total_nr_words = vec.toarray().sum()
+# # total_nr_words = vec.toarray().sum()
 # # list of all words
 # words = vectorizer.get_feature_names()
 # # remove words with special characters and numbers in them
 # words_nonr = [word for word in words if word.isalpha()]
-# alpha_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_nonr]
-# nr_words_alpha = vec[:, alpha_idx].sum()
-# # correctly spelled english words
-# # words_spell = [word for word in words_nonr if dictionary.check(word)]
-# # spell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_spell]
-# # nr_words_spell = vec[:, spell_idx].sum()
-# # incorrectly spelled english words
+# # alpha_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_nonr]
+# # nr_words_alpha = vec[:, alpha_idx].sum()
+# # # correctly spelled english words
+# # # words_spell = [word for word in words_nonr if dictionary.check(word)]
+# # # spell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_spell]
+# # # nr_words_spell = vec[:, spell_idx].sum()
+# # # incorrectly spelled english words
 # words_misspell = [word for word in words_nonr if dictionary.check(word) is False]
-# misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
-# nr_words_misspell = vec[:, misspell_idx].sum()
+# # misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
+# # nr_words_misspell = vec[:, misspell_idx].sum()
+# #
+# # print('total nr. words: ' + str(len(words)))
+# # print('nr. words without special characters: ' + str(len(words_nonr)))
+# # print('nr. correctly spelled words: ' + str(len(words_spell)))
+# # print('nr. incorrectly spelled words: ' + str(len(words_misspell)))
+# # print('fr. incorrectly spelled words: ' + str(float(len(words_misspell))/len(words_nonr)))
 #
-# print('total nr. words: ' + str(len(words)))
-# print('nr. words without special characters: ' + str(len(words_nonr)))
-# print('nr. correctly spelled words: ' + str(len(words_spell)))
-# print('nr. incorrectly spelled words: ' + str(len(words_misspell)))
-# print('fr. incorrectly spelled words: ' + str(float(len(words_misspell))/len(words_nonr)))
+# df['SPEECH_ACT'] = df['SPEECH_ACT'].astype('str').str.lower()
+# df['SPEECH_ACT'] = df['SPEECH_ACT'].astype('str').str.split()
+# df['SPEECH_ACT'].str.len().sum()
+#
+# spell_dict = dict(zip(words_misspell, [''] * len(words_misspell)))
+# df['SPEECH_ACT'].apply(lambda x: replace_from_dict(spell_dict, x))
+# df['SPEECH_ACT'] = df['SPEECH_ACT'].apply(' '.join)
+# df['SPEECH_ACT'] = df['SPEECH_ACT'].astype('str').str.split()
+# df['SPEECH_ACT'].str.len().sum()
