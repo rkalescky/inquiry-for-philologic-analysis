@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import re
+import sys
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
@@ -147,11 +148,11 @@ for name, df in group:
     # build document term matrix, debate by debate
     doc_term_matrix[group_ind, ] = debate_vec
     # print debate index and debate name
-    print(group_ind, name)
+    sys.stdout.write(group_ind, name)
 
 doc_term_matrix.shape
 nr_incorrectly_sp = doc_term_matrix[:, dummy_ind].sum()
 nr_correctly_sp = doc_term_matrix.sum() - nr_incorrectly_sp
 
-print('Number incorrectly spelled: ' + str(nr_incorrectly_sp))
-print('Number correctly spelled: ' + str(nr_correctly_sp))
+sys.stdout.write('Number incorrectly spelled: ' + str(nr_incorrectly_sp))
+sys.stdout.write('Number correctly spelled: ' + str(nr_correctly_sp))
