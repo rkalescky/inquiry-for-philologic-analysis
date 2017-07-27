@@ -9,6 +9,11 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem.snowball import SnowballStemmer
 import enchant
 
+sys.stdout.write('test print')
+sys.stdout.write('\n')
+test_print = 'test variable print'
+sys.stdout.write(test_print)
+
 
 def tag2pos(tag, returnNone=False):
     ap_tag = {'NN': wn.NOUN, 'JJ': wn.ADJ,
