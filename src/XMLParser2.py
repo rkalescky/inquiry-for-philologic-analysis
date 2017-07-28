@@ -7,13 +7,13 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-files = os.listdir('C:/Users/Kyle/Desktop/xml')
+files = os.listdir('/gpfs/data/datasci/paper-m/raw/hansard_xml/')
 search_words = ['House divided', 'Committee divided', 'on Division', 'Division List',
                 'The Ayes and the Noes',]
 
-f = open('HansardVotes.tsv', 'w+')
+f = open('/users/ktaylor6/inquiry-for-philologic-analysis/data/HansardVotes.tsv', 'w+')
 for xml in files:
-    doc = etree.parse('C:/Users/Kyle/Desktop/xml/' +xml)
+    doc = etree.parse('/gpfs/data/datasci/paper-m/raw/hansard_xml/' +xml)
     for words in search_words:
         result = doc.xpath('//*[@id and contains(., $word)]', word = words)
         for elem in result:
