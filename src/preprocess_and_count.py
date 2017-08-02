@@ -9,7 +9,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem.snowball import SnowballStemmer
 import enchant
 
-sys.stdout.write('test print')
+sys.stdout.write('test sys.stdout.write')
 sys.stdout.write('\n')
 test_print = 'test variable print'
 sys.stdout.write(test_print)
@@ -22,7 +22,7 @@ def tag2pos(tag, returnNone=False):
         return ap_tag[tag[:2]]
     except:
         return None if returnNone else ''
-    print('tag2pos done')
+    sys.stdout.write('tag2pos done')
 
 
 def lemmatize_pos(x):
@@ -37,7 +37,7 @@ def lemmatize_pos(x):
         else:
             lemmas.append(lemmatizer.lemmatize(word))
     return(lemmas)
-    print('lemmatize_pos done')
+    sys.stdout.write('lemmatize_pos done')
 
 
 # Set the paths
@@ -90,11 +90,11 @@ seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
 text = pd.concat([text, seed]).reset_index(drop=True)
 
 # Get unique words
-print('starting countvectorizer and fittransform on whole corpus')
+sys.stdout.write('starting countvectorizer and fittransform on whole corpus')
 vectorizer = CountVectorizer()
 vec = vectorizer.fit_transform(text.SPEECH_ACT)
 words = vectorizer.get_feature_names()
-print('done countvectorizer and fittransform')
+sys.stdout.write('done countvectorizer and fittransform')
 
 # Spellcheck and replace incorrectly spelled words with dummy word
 dictionary = enchant.Dict("en_GB")
@@ -112,7 +112,7 @@ dummy_dict = dict(zip(dummy, ['williewaiola'] * len(dummy)))
 notdummy_dict = dict(zip(notdummy, stems))
 unique_words_dict = dict(dummy_dict, **notdummy_dict)
 unique_words = set(unique_words_dict.values())
-print('dictionary made')
+sys.stdout.write('dictionary made')
 
 # Convert original corpus to stemmed corpus
 def replace_count_words(row, dict):
@@ -130,7 +130,7 @@ def replace_count_words(row, dict):
     # write new line for each speech act
     with open(path + "mc-20170727-stemmed.txt", "a") as f:
         f.write('\n')
-        print('speech act written to file')
+        sys.stdout.write('speech act written to file')
     # read sa from file and create sa vector
     with open(path + 'mc-20170727-stemmed.txt', 'r') as f:
         sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
@@ -138,7 +138,7 @@ def replace_count_words(row, dict):
     vec2 = vectorizer2.fit_transform(sa)
     dummy_ind = vectorizer2.vocabulary_.get('williewaiola')
     return(vec2.toarray(), dummy_ind)
-    print('replace_count_words done')
+    sys.stdout.write('replace_count_words done')
 
 
 group = text.groupby(["BILL", "YEAR"])
