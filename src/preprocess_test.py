@@ -60,15 +60,15 @@ def lemstem_df(df, method):
 
 
 # TEST UNICODE ASCII ERROR
-for index, row in text.iterrows():
-    print(type(row['SPEECH_ACT']))
-    row['SPEECH_ACT'] = word_tokenize(row['SPEECH_ACT'])
-text['SPEECH_ACT'] = text['SPEECH_ACT'].apply(lambda x: word_tokenize(x))
-text['SPEECH_ACT'] = text['SPEECH_ACT'].astype('str').str.split()
+#for index, row in text.iterrows():
+#    print(type(row['SPEECH_ACT']))
+#    row['SPEECH_ACT'] = word_tokenize(row['SPEECH_ACT'])
+#text['SPEECH_ACT'] = text['SPEECH_ACT'].apply(lambda x: word_tokenize(x))
+#text['SPEECH_ACT'] = text['SPEECH_ACT'].astype('str').str.split()
 
 
 # load British English spell checker
-dictionary = enchant.Dict("en_GB")
+#dictionary = enchant.Dict("en_GB")
 # load stemmer and lemmatizer
 stemmer = SnowballStemmer('english')
 lemmatizer = WordNetLemmatizer()
@@ -99,15 +99,15 @@ stemmer.stem('bicycles')
 stemmer.stem('bikes')
 stemmer.stem('bicycling')
 
-# path_output = '/users/alee35/scratch/land-wars-devel-data/'
-# path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
-# path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
+path_output = '/users/alee35/scratch/land-wars-devel-data/'
+path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 
-path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
-with open(path_local + 'membercontributions-20161026.tsv', 'r') as f:
+with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 
 # get year from date
@@ -127,64 +127,64 @@ for index, row in text.iterrows():
 # create debate_id
 text['DEBATE_ID'] = text['BILL'] + ' ' + text['ID']
 metadata = text.drop(['SPEECH_ACT'], axis=1, inplace=False)
-metadata.to_csv(path_output_local + "metadata_20170724.tsv",
+metadata.to_csv(path_output + "metadata_20170724.tsv",
                sep="\t", header=True, index=False, encoding='utf-8')
 
 # drop some columns
-text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
+#text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
 
 # convert integer speech acts to string and decode unicode strings
-for index, row in text.iterrows():
-    if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
-        row["SPEECH_ACT"] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
-        text.loc[index, 'SPEECH_ACT'] = ''
+#for index, row in text.iterrows():
+#    if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
+#        row["SPEECH_ACT"] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
+#        text.loc[index, 'SPEECH_ACT'] = ''
 
 # groupby year, decade, bill, and concatenate speech act with a space
-text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+#text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 
 # append speech acts to text
-with open(path_seed_local + 'four_corpus.txt', 'r') as f:
-    seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
+#with open(path_seed_local + 'four_corpus.txt', 'r') as f:
+#    seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
 
 # decode unicode string with unicode codec
-for index, row in seed.iterrows():
-    if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
-        row["SPEECH_ACT"] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
-        text.loc[index, 'SPEECH_ACT'] = ''
+#for index, row in seed.iterrows():
+#    if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
+#        row["SPEECH_ACT"] = row['SPEECH_ACT'].encode('utf-8', 'ignore').decode('utf-8', 'ignore')
+#        text.loc[index, 'SPEECH_ACT'] = ''
 
 # make metadataframe for seeds
-seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
-                'Seed3-Richmond', 'Seed4-Bessborough']
-seed['YEAR'] = [1884, 1845, 1882, 1881]
-seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
+#seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
+#                'Seed3-Richmond', 'Seed4-Bessborough']
+#seed['YEAR'] = [1884, 1845, 1882, 1881]
+#seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
 
 # append to end of text df
-text = pd.concat([text, seed]).reset_index(drop=True)
+#text = pd.concat([text, seed]).reset_index(drop=True)
 
 
 # lemmatize/stem text
 # textlem = lemstem_df(text, 'lemma')
 
 # create as many processes as there are CPUs on your machine
-num_processes = multiprocessing.cpu_count()/2
+#num_processes = multiprocessing.cpu_count()/2
 # calculate the chunk size as an integer
-chunk_size = int(text.shape[0]/num_processes)
+#chunk_size = int(text.shape[0]/num_processes)
 # works even if the df length is not evenly divisible by num_processes
-chunks = [text.ix[text.index[i:i + chunk_size]]
-          for i in range(0, text.shape[0], chunk_size)]
+#chunks = [text.ix[text.index[i:i + chunk_size]]
+#          for i in range(0, text.shape[0], chunk_size)]
 
 # create our pool with `num_processes` processes
-pool = multiprocessing.Pool(processes=num_processes)
+#pool = multiprocessing.Pool(processes=num_processes)
 # partial with fixed second argument
-lemstem_df_par = partial(lemstem_df, method='stem')
+#lemstem_df_par = partial(lemstem_df, method='stem')
 # apply our function to each chunk in the list
-result = pool.map(lemstem_df_par, chunks)
+#result = pool.map(lemstem_df_par, chunks)
 
 # combine the results from our pool to a dataframe
-textlem = pd.DataFrame().reindex_like(text)
+#textlem = pd.DataFrame().reindex_like(text)
 # textlem['CLEAN_TEXT'] = np.NaN
-for i in range(len(result)):
-    textlem.ix[result[i].index] = result[i]
+#for i in range(len(result)):
+#    textlem.ix[result[i].index] = result[i]
 
-textlem.to_csv(path_output_local + "cleanbills-20170724_test.tsv",
-               sep="\t", header=True, index=False, encoding='utf-8')
+#textlem.to_csv(path_output_local + "cleanbills-20170724_test.tsv",
+#               sep="\t", header=True, index=False, encoding='utf-8')
