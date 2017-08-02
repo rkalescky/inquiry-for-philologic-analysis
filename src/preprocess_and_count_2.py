@@ -18,6 +18,7 @@ def tag2pos(tag, returnNone=False):
     except:
         return None if returnNone else ''
     sys.stdout.write('tag2pos done')
+    sys.stdout.write('\n')
 
 
 def lemmatize_pos(x):
@@ -33,6 +34,63 @@ def lemmatize_pos(x):
             lemmas.append(lemmatizer.lemmatize(word))
     return(lemmas)
     sys.stdout.write('lemmatize_pos done')
+    sys.stdout.write('\n')
+
+
+# function to build up dictionary of all unique words and replace words in corpus with stems
+def build_dict_replace_words(row, mdict):
+
+    # get unique words in speech act
+    vectorizer = CountVectorizer()
+    vec = vectorizer.fit_transform([row[2]])
+    words = vectorizer.get_feature_names()
+
+    # check dictionary for words and add if not present
+    # check if word is already in dict
+    not_cached = [word for word in words if word not in mdict]
+    # check if word is dummy or not
+    dictionary = enchant.Dict("en_GB")
+    dummy = [word for word in not_cached if word.isalpha() is False or dictionary.check(word) is False]
+    dummy_dict = dict(zip(dummy, ['williewaiola'] * len(dummy)))
+    # stem or lemmatize
+    not_dummy = [word for word in words if word.isalpha() and dictionary.check(word)]
+    stems = [stemmer.stem(word) for word in not_dummy]
+    # TOFIX: lemmas = lemmatize_pos(not_dummy)
+    not_dummy_dict = dict(zip(not_dummy, stems))
+    # update dictionary
+    mdict.update(dummy_dict)
+    mdict.update(not_dummy_dict)
+    sys.stdout.write('number of keys in master dict = {}'.format(len(mdict)))
+    sys.stdout.write('\n')
+
+    # replace words with stems or dummy
+    veca = vec.toarray()
+    # write metadata to file for mallet
+    with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
+        f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
+    # write speech act with stems or dummy
+    for i in range(len(words)):
+        with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
+            f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
+    # insert new line character after each speech act
+    with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
+        f.write('\n')
+        sys.stdout.write('speech act {} written to file'.format(index))
+        sys.stdout.write('\n')
+
+
+# function to count correctly spelled and incorrectly spelled words
+def count_words(row, mdict):
+    # read sa from file and create sa vector
+    with open(path_local + 'mc-20170727-stemmed.txt', 'r') as f:
+        sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
+    vectorizer2 = CountVectorizer(vocabulary=mdict)
+    vec2 = vectorizer2.fit_transform(sa)
+    dummy_ind = vectorizer2.vocabulary_.get('williewaiola')
+    sys.stdout.write('speech act {} added to debate {} matrix'.format(row.SEQ_IND, name))
+    sys.stdout.write('\n')
+
+    return(vec2.toarray(), dummy_ind)
 
 
 # Set the paths
@@ -84,82 +142,40 @@ seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
 # append to end of text df
 text = pd.concat([text, seed]).reset_index(drop=True)
 
-# Get unique words
-sys.stdout.write('starting countvectorizer and fittransform on whole corpus')
-vectorizer = CountVectorizer()
-vec = vectorizer.fit_transform(text.SPEECH_ACT)
-words = vectorizer.get_feature_names()
-sys.stdout.write('done countvectorizer and fittransform')
-
-# Spellcheck and replace incorrectly spelled words with dummy word
-dictionary = enchant.Dict("en_GB")
-dummy = [word for word in words if word.isalpha() is False or dictionary.check(word) is False]
-notdummy = [word for word in words if word.isalpha() and dictionary.check(word)]
-
-# Stem/lemmatize correctly spelled words_en
+# Initialize a dictionary of all unique words, stemmer and lemmatizer
+master_dict = {}
 stemmer = SnowballStemmer('english')
 lemmatizer = WordNetLemmatizer()
-stems = [stemmer.stem(word) for word in notdummy]
-lemmas = lemmatize_pos(notdummy)
 
-# Create dictionary of unique words and stems/dummy word
-dummy_dict = dict(zip(dummy, ['williewaiola'] * len(dummy)))
-notdummy_dict = dict(zip(notdummy, stems))
-unique_words_dict = dict(dummy_dict, **notdummy_dict)
-unique_words = set(unique_words_dict.values())
-sys.stdout.write('dictionary made')
+# Write stemmed corpus to file
+for index, row in text.iterrows():
+    build_dict_replace_words(row, master_dict)
 
-# Convert original corpus to stemmed corpus
-def replace_count_words(row, dict):
-    # write metadata to file for mallet
-    with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
-        f.write(str(row[1]) + '\t' + str(row[2]) + '\t')
-    # replace unique words with dictionary values and write to file
-    vectorizer = CountVectorizer()
-    vec = vectorizer.fit_transform([row[3]])
-    words = vectorizer.get_feature_names()
-    vec_array = vec.toarray()
-    for i in range(len(words)):
-        with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
-            f.write((str(dict.get(words[i])) + ' ') * int(vec_array[:, i]))
-    # write new line for each speech act
-    with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
-        f.write('\n')
-        sys.stdout.write('speech act written to file')
-    # read sa from file and create sa vector
-    with open(path_local + 'mc-20170727-stemmed.txt', 'r') as f:
-        sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
-    vectorizer2 = CountVectorizer(vocabulary=unique_words)
-    vec2 = vectorizer2.fit_transform(sa)
-    dummy_ind = vectorizer2.vocabulary_.get('williewaiola')
-    return(vec2.toarray(), dummy_ind)
-    sys.stdout.write('replace_count_words done')
+# Vocabulary for counting words is unique set of values in master dict
+vocabulary = set(master_dict.values())
 
-
+# Count words and build debate doc-term matrix
 group = text.groupby(["BILL", "YEAR"])
-doc_term_matrix = np.zeros((len(group), len(unique_words)), dtype=int)
-
+doc_term_matrix = np.zeros((len(group), len(vocabulary)), dtype=int)
 for name, df in group:
     group_ind = int(group.indices.get(name))
     seq_ind = df.index.tolist()
     df = df.assign(SEQ_IND=seq_ind)
     df.reset_index(inplace=True)
-    num_rows_sa = df.shape[0]
-    debate_matrix = np.zeros((num_rows_sa, len(unique_words)), dtype=int)
+    num_docs = df.shape[0]
+    debate_matrix = np.zeros((num_docs, len(vocabulary)), dtype=int)
     for index, row in df.iterrows():
-        # write stemmed corpus to file and build debate doc-term matrix
-        sa_vec, dummy_ind = replace_count_words(row, unique_words_dict)
+        sa_vec, dummy_ind = count_words(row, vocabulary)
         debate_matrix[index, ] = sa_vec
     # sum debate matrix rows to get debate vector
     debate_vec = debate_matrix.sum(axis=0)
     # build document term matrix, debate by debate
     doc_term_matrix[group_ind, ] = debate_vec
-    # print debate index and debate name
-    sys.stdout.write(group_ind, name)
 
-doc_term_matrix.shape
+# Print number of correctly/incorrectly spelled words
 nr_incorrectly_sp = doc_term_matrix[:, dummy_ind].sum()
 nr_correctly_sp = doc_term_matrix.sum() - nr_incorrectly_sp
-
 sys.stdout.write('Number incorrectly spelled: ' + str(nr_incorrectly_sp))
+sys.stdout.write('\n')
 sys.stdout.write('Number correctly spelled: ' + str(nr_correctly_sp))
+sys.stdout.write('\n')
