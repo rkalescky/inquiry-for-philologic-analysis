@@ -66,14 +66,14 @@ def build_dict_replace_words(row, mdict):
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
-    with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
+    with open(path + "mc-20170727-stemmed.txt", "a") as f:
         f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
     # write speech act with stems or dummy
     for i in range(len(words)):
-        with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
+        with open(path + "mc-20170727-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path_local + "mc-20170727-stemmed.txt", "a") as f:
+    with open(path + "mc-20170727-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
@@ -82,7 +82,7 @@ def build_dict_replace_words(row, mdict):
 # function to count correctly spelled and incorrectly spelled words
 def count_words(row, mdict):
     # read sa from file and create sa vector
-    with open(path_local + 'mc-20170727-stemmed.txt', 'r') as f:
+    with open(path + 'mc-20170727-stemmed.txt', 'r') as f:
         sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
@@ -94,13 +94,13 @@ def count_words(row, mdict):
 
 
 # Set the paths
-# path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
-# path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
-path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
+# path_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+# path_seed_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
-with open(path_local + 'membercontributions_test.tsv', 'r') as f:
+with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 
 # Prepare the text
@@ -129,7 +129,7 @@ for index, row in text.iterrows():
 # groupby year, decade, bill, and concatenate speech act with a space
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 # append seeds to text
-with open(path_seed_local + 'four_corpus.txt', 'r') as f:
+with open(path_seed + 'four_corpus.txt', 'r') as f:
     seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
 # decode unicode string with unicode codec
 for index, row in seed.iterrows():
