@@ -128,6 +128,15 @@ for index, row in text.iterrows():
     if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
         text.loc[index, 'SPEECH_ACT'] = ''
     row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+# write to csv
+text.to_csv(path + 'membercontributions-20170802.tsv', sep='\t', index=False)
+sys.stdout.write('processed corpus written to TSV!')
+sys.stdout.write('\n')
+
+# read from csv after writing once
+# with open(path + 'membercontributions-20170802.tsv', 'r') as f:
+    # text = pd.read_csv(f, sep='\t')
+
 # groupby year, decade, bill, and concatenate speech act with a space
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 # append seeds to text
