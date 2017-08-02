@@ -102,6 +102,8 @@ path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 # Load the raw data to a dataframe
 with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
+sys.stdout.write('corpus read in successfully!')
+sys.stdout.write('\n')
 
 # Prepare the text
 # get year from date
@@ -141,6 +143,8 @@ seed['YEAR'] = [1884, 1845, 1882, 1881]
 seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
 # append to end of text df
 text = pd.concat([text, seed]).reset_index(drop=True)
+sys.stdout.write('corpus processed successfully!')
+sys.stdout.write('\n')
 
 # Initialize a dictionary of all unique words, stemmer and lemmatizer
 master_dict = {}
@@ -153,6 +157,8 @@ for index, row in text.iterrows():
 
 # Vocabulary for counting words is unique set of values in master dict
 vocabulary = set(master_dict.values())
+sys.stdout.write('vocabulary built successfully!')
+sys.stdout.write('\n')
 
 # Count words and build debate doc-term matrix
 group = text.groupby(["BILL", "YEAR"])
@@ -171,6 +177,8 @@ for name, df in group:
     debate_vec = debate_matrix.sum(axis=0)
     # build document term matrix, debate by debate
     doc_term_matrix[group_ind, ] = debate_vec
+sys.stdout.write('doc-term matrix built successfully!')
+sys.stdout.write('\n')
 
 # Print number of correctly/incorrectly spelled words
 nr_incorrectly_sp = doc_term_matrix[:, dummy_ind].sum()
