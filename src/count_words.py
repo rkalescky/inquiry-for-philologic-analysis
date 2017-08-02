@@ -37,7 +37,7 @@ path_output = '/users/alee35/code/inquiry-for-philologic-analysis/images/'
 # path_output_local = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/images/'
 
 # read the data file
-df = pd.read_csv(path + 'membercontributions-20161026.tsv',
+df = pd.read_csv(path + 'membercontributions-test.tsv',
                  delimiter='\t', usecols=[5])
 # replace nans with empty string
 df.replace(np.nan, '', regex=True, inplace=True)
@@ -101,12 +101,12 @@ corpus = list(df['SPEECH_ACT'])
 
 # # explore how the total number of words change as a function of max number of
 # # documents a word appears
-# nr_docs = 10e0**np.linspace(0, 7, num=8)
-# max_df = (nr_docs+0.5)/len(corpus)
+nr_docs = 10e0**np.linspace(0, 7, num=8)
+max_df = (nr_docs+0.5)/len(corpus)
 # total_nr_words = np.zeros(len(nr_docs))
-# nr_words_alpha = np.zeros(len(nr_docs))
-# nr_words_spell = np.zeros(len(nr_docs))
-# nr_words_misspell = np.zeros(len(nr_docs))
+nr_words_alpha = np.zeros(len(nr_docs))
+nr_words_spell = np.zeros(len(nr_docs))
+nr_words_misspell = np.zeros(len(nr_docs))
 
 # get total number of words
 for i in range(len(nr_docs)):
@@ -130,7 +130,7 @@ for i in range(len(nr_docs)):
     misspell_idx = [vectorizer.vocabulary_.get(word).astype('int64') for word in words_misspell]
     nr_words_misspell[i] = vec[:, misspell_idx].sum()
 
-    print(nr_docs[i], nr_words_alpha[i],
+    print(nr_words_alpha[i],
           nr_words_spell[i], nr_words_misspell[i])
 
 # # cumulative words plot
