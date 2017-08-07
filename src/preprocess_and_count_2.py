@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import re
 import sys
+import string
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
@@ -113,127 +113,113 @@ sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 
 
-# # Prepare the text
-# # @profile
-# def prepare_text(text):
-#     # get year from date
-#     text['YEAR'] = text.DATE.str[:4]
-#     # convert years column to numeric
-#     text['YEAR'] = text['YEAR'].astype(float)
-#     # fix problems with dates and remove non-alpha numeric characters from debate titles
-#     for index, row in text.iterrows():
-#         # fix years after 1908
-#         if row['YEAR'] > 1908:
-#             text.loc[index, 'YEAR'] = np.NaN
-#             # forward fill missing dates
-#             text['YEAR'] = text['YEAR'].fillna(method='ffill')
-#         # # compute decade
-#         # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
-#         # remove non-alpha numeric characters from bill titles
-#         text['BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
-#     # drop some columns
-#     text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
-#     # convert integer speech acts to string and decode unicode strings
-#     for index, row in text.iterrows():
-#         if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
-#             text.loc[index, 'SPEECH_ACT'] = ''
-#         row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
-#     # write to csv
-#     text.to_csv(path + 'membercontributions-20170802.tsv', sep='\t', index=False)
-#     sys.stdout.write('processed corpus written to TSV!')
-#     sys.stdout.write('\n')
-#
-#     # read from csv after writing once
-#     # with open(path + 'membercontributions-20170802.tsv', 'r') as f:
-#         # text = pd.read_csv(f, sep='\t')
-#
-#     # groupby year, decade, bill, and concatenate speech act with a space
-#     text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
-#     # append seeds to text
-#     with open(path_seed + 'four_corpus.txt', 'r') as f:
-#         seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
-#     # decode unicode string with unicode codec
-#     for index, row in seed.iterrows():
-#         row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
-#     # make metadataframe for seeds
-#     seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
-#                     'Seed3-Richmond', 'Seed4-Bessborough']
-#     seed['YEAR'] = [1884, 1845, 1882, 1881]
-#     seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
-#     # append to end of text df
-#     text = pd.concat([text, seed]).reset_index(drop=True)
-#     sys.stdout.write('corpus processed successfully!')
-#     sys.stdout.write('\n')
-#
-#     return(text)
-#
-#
-# text = prepare_text(text)
+# Prepare the text
+# @profile
+def prepare_text(text):
+    # get year from date
+    text['YEAR'] = text.DATE.str[:4]
+    # convert years column to numeric
+    text['YEAR'] = text['YEAR'].astype(float)
+    # fix problems with dates and remove non-alpha numeric characters from debate titles
+    for index, row in text.iterrows():
+        # fix years after 1908
+        if row['YEAR'] > 1908:
+            text.loc[index, 'YEAR'] = np.NaN
+            # forward fill missing dates
+            text.loc[index, 'YEAR'] = row['YEAR'].fillna(method='ffill')
+        # # compute decade
+        # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+        # remove non-alpha numeric characters from bill titles
+        # text.loc[index, 'BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
+        text.loc[index, 'BILL'] = str(row.BILL).translate(None, string.digits + string.punctuation)
+    # drop some columns
+    text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
+    # convert integer speech acts to string and decode unicode strings
+    for index, row in text.iterrows():
+        if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
+            text.loc[index, 'SPEECH_ACT'] = ''
+        text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+    # write to csv
+    text.to_csv(path + 'membercontributions-20170807.tsv', sep='\t', index=False)
+    sys.stdout.write('processed corpus written to TSV!')
+    sys.stdout.write('\n')
 
-# get year from date
-text['YEAR'] = text.DATE.str[:4]
-sys.stdout.write('get year from date!')
-sys.stdout.write('\n')
-# convert years column to numeric
-text['YEAR'] = text['YEAR'].astype(float)
-sys.stdout.write('convert years column to numeric!')
-sys.stdout.write('\n')
-# fix problems with dates and remove non-alpha numeric characters from debate titles
-for index, row in text.iterrows():
-    # fix years after 1908
-    if row['YEAR'] > 1908:
-        text.loc[index, 'YEAR'] = np.NaN
-        # forward fill missing dates
-        text['YEAR'] = text['YEAR'].fillna(method='ffill')
-    # # compute decade
-    # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
-    # remove non-alpha numeric characters from bill titles
-    text['BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
-sys.stdout.write('fix problems with dates and remove non-alpha numeric chars!')
-sys.stdout.write('\n')
-# drop some columns
-text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
-sys.stdout.write('drop some columns!')
-sys.stdout.write('\n')
-# convert integer speech acts to string and decode unicode strings
-for index, row in text.iterrows():
-    if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
-        text.loc[index, 'SPEECH_ACT'] = ''
-    row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
-sys.stdout.write('convert integer speech acts to string and decode unicode strings!')
-sys.stdout.write('\n')
-# write to csv
-text.to_csv(path + 'membercontributions-20170802.tsv', sep='\t', index=False)
-sys.stdout.write('processed corpus written to TSV!')
-sys.stdout.write('\n')
+    # read from csv after writing once
+    # with open(path + 'membercontributions-20170807.tsv', 'r') as f:
+        # text = pd.read_csv(f, sep='\t')
 
-# read from csv after writing once
-# with open(path + 'membercontributions-20170802.tsv', 'r') as f:
-    # text = pd.read_csv(f, sep='\t')
+    # groupby year, decade, bill, and concatenate speech act with a space
+    text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+    # append seeds to text
+    with open(path_seed + 'four_corpus.txt', 'r') as f:
+        seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
+    # decode unicode string with unicode codec
+    for index, row in seed.iterrows():
+        seed[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+    # make metadataframe for seeds
+    seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
+                    'Seed3-Richmond', 'Seed4-Bessborough']
+    seed['YEAR'] = [1884, 1845, 1882, 1881]
+    seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
+    # append to end of text df
+    text = pd.concat([text, seed]).reset_index(drop=True)
+    sys.stdout.write('corpus processed successfully!')
+    sys.stdout.write('\n')
 
-# groupby year, decade, bill, and concatenate speech act with a space
-text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
-sys.stdout.write('groupby and concatenate speech acts!')
-sys.stdout.write('\n')
-# append seeds to text
-with open(path_seed + 'four_corpus.txt', 'r') as f:
-    seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
-# decode unicode string with unicode codec
-for index, row in seed.iterrows():
-    row["SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
-sys.stdout.write('open seed reports and decode unicode strings with unicode codec!')
-sys.stdout.write('\n')
-# make metadataframe for seeds
-seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
-                'Seed3-Richmond', 'Seed4-Bessborough']
-seed['YEAR'] = [1884, 1845, 1882, 1881]
-seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
-sys.stdout.write('make metadataframe for seeds!')
-sys.stdout.write('\n')
-# append to end of text df
-text = pd.concat([text, seed]).reset_index(drop=True)
-sys.stdout.write('corpus processed successfully!')
-sys.stdout.write('\n')
+    return(text)
+
+
+text = prepare_text(text)
+
+# # get year from date
+# text['YEAR'] = text.DATE.str[:4]
+# # convert years column to numeric
+# text['YEAR'] = text['YEAR'].astype(float)
+# # fix problems with dates and remove non-alpha numeric characters from debate titles
+# for index, row in text.iterrows():
+#     # fix years after 1908
+#     if row['YEAR'] > 1908:
+#         text.loc[index, 'YEAR'] = np.NaN
+#         # forward fill missing dates
+#         text.loc[index, 'YEAR'] = row['YEAR'].fillna(method='ffill')
+#     # # compute decade
+#     # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+#     # remove non-alpha numeric characters from bill titles
+#     # text.loc[index, 'BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
+#     text.loc[index, 'BILL'] = str(row.BILL).translate(None, string.digits + string.punctuation)
+# # drop some columns
+# text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
+# # convert integer speech acts to string and decode unicode strings
+# for index, row in text.iterrows():
+#     if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
+#         text.loc[index, 'SPEECH_ACT'] = ''
+#     text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+# # write to csv
+# text.to_csv(path + 'membercontributions-20170807.tsv', sep='\t', index=False)
+# sys.stdout.write('processed corpus written to TSV!')
+# sys.stdout.write('\n')
+#
+# # read from csv after writing once
+# # with open(path + 'membercontributions-20170807.tsv', 'r') as f:
+#     # text = pd.read_csv(f, sep='\t')
+#
+# # groupby year, decade, bill, and concatenate speech act with a space
+# text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+# # append seeds to text
+# with open(path_seed + 'four_corpus.txt', 'r') as f:
+#     seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
+# # decode unicode string with unicode codec
+# for index, row in seed.iterrows():
+#     seed[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+# # make metadataframe for seeds
+# seed['BILL'] = ['Seed1-Napier', 'Seed2-Devon',
+#                 'Seed3-Richmond', 'Seed4-Bessborough']
+# seed['YEAR'] = [1884, 1845, 1882, 1881]
+# seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
+# # append to end of text df
+# text = pd.concat([text, seed]).reset_index(drop=True)
+# sys.stdout.write('corpus processed successfully!')
+# sys.stdout.write('\n')
 
 # Initialize a dictionary of all unique words, stemmer and lemmatizer
 master_dict = {}
