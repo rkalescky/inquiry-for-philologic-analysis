@@ -118,8 +118,12 @@ sys.stdout.write('\n')
 def prepare_text(text):
     # get year from date
     text['YEAR'] = text.DATE.str[:4]
+    sys.stdout.write('get year from date!')
+    sys.stdout.write('\n')
     # convert years column to numeric
     text['YEAR'] = text['YEAR'].astype(float)
+        sys.stdout.write('convert years column to numeric!')
+        sys.stdout.write('\n')
     # fix problems with dates and remove non-alpha numeric characters from debate titles
     for index, row in text.iterrows():
         # fix years after 1908
@@ -132,6 +136,8 @@ def prepare_text(text):
         # remove non-alpha numeric characters from bill titles
         # text.loc[index, 'BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
         text.loc[index, 'BILL'] = str(row.BILL).translate(None, string.digits + string.punctuation)
+    sys.stdout.write('fix problems with dates and remove non alpha chars from debate titles!')
+    sys.stdout.write('\n')
     # drop some columns
     text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
     # convert integer speech acts to string and decode unicode strings
@@ -139,6 +145,8 @@ def prepare_text(text):
         if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
             text.loc[index, 'SPEECH_ACT'] = ''
         text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+    sys.stdout.write('convert integer speech acts to string and decode unicode strings!')
+    sys.stdout.write('\n')
     # write to csv
     text.to_csv(path + 'membercontributions-20170807.tsv', sep='\t', index=False)
     sys.stdout.write('processed corpus written to TSV!')
