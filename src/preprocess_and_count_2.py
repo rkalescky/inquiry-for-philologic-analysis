@@ -99,16 +99,16 @@ def count_words(row, mdict):
 
 
 # Set the paths
-# path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
-# path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
-path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
+# path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+# path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
-# with open(path + 'membercontributions-20161026.tsv', 'r') as f:
-    # text = pd.read_csv(f, sep='\t')
-with open(path + 'membercontributions_test.tsv', 'r') as f:
+with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
+# with open(path + 'membercontributions_test.tsv', 'r') as f:
+    # text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 
