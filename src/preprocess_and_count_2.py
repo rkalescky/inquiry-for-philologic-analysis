@@ -130,14 +130,15 @@ def prepare_text(text):
         if row['YEAR'] > 1908:
             text.loc[index, 'YEAR'] = np.NaN
         # # compute decade
-        # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
+        # # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
         # remove non-alpha numeric characters from bill titles
         # text.loc[index, 'BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
         text.loc[index, 'BILL'] = str(row.BILL).translate(None, string.digits + string.punctuation)
         # convert integer speech acts to string and decode unicode strings
         if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
-            text.loc[index, 'SPEECH_ACT'] = ''
-        text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+            text.loc[index, 'SPEECH_ACT'] = str('')
+        if type(row['SPEECH_ACT']) is unicode:
+            text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
     sys.stdout.write('fix problems with dates, debate titles, unicode!')
     sys.stdout.write('\n')
     # forward fill missing dates
