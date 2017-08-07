@@ -99,16 +99,16 @@ def count_words(row, mdict):
 
 
 # Set the paths
-path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
-path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
-# path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-# path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+# path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+# path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
+path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
-with open(path + 'membercontributions-20161026.tsv', 'r') as f:
-    text = pd.read_csv(f, sep='\t')
-# with open(path + 'membercontributions_test.tsv', 'r') as f:
+# with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     # text = pd.read_csv(f, sep='\t')
+with open(path + 'membercontributions_test.tsv', 'r') as f:
+    text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 
@@ -122,31 +122,30 @@ def prepare_text(text):
     sys.stdout.write('\n')
     # convert years column to numeric
     text['YEAR'] = text['YEAR'].astype(float)
-        sys.stdout.write('convert years column to numeric!')
-        sys.stdout.write('\n')
+    sys.stdout.write('convert years column to numeric!')
+    sys.stdout.write('\n')
     # fix problems with dates and remove non-alpha numeric characters from debate titles
     for index, row in text.iterrows():
         # fix years after 1908
         if row['YEAR'] > 1908:
             text.loc[index, 'YEAR'] = np.NaN
-            # forward fill missing dates
-            text.loc[index, 'YEAR'] = row['YEAR'].fillna(method='ffill')
         # # compute decade
         # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
         # remove non-alpha numeric characters from bill titles
         # text.loc[index, 'BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
         text.loc[index, 'BILL'] = str(row.BILL).translate(None, string.digits + string.punctuation)
-    sys.stdout.write('fix problems with dates and remove non alpha chars from debate titles!')
-    sys.stdout.write('\n')
-    # drop some columns
-    text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
-    # convert integer speech acts to string and decode unicode strings
-    for index, row in text.iterrows():
+        # convert integer speech acts to string and decode unicode strings
         if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
             text.loc[index, 'SPEECH_ACT'] = ''
         text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
-    sys.stdout.write('convert integer speech acts to string and decode unicode strings!')
+    sys.stdout.write('fix problems with dates, debate titles, unicode!')
     sys.stdout.write('\n')
+    # forward fill missing dates
+    text['YEAR'].fillna(method='ffill', inplace=True)
+    sys.stdout.write('forward fill dates!')
+    sys.stdout.write('\n')
+    # drop some columns
+    text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
     # write to csv
     text.to_csv(path + 'membercontributions-20170807.tsv', sep='\t', index=False)
     sys.stdout.write('processed corpus written to TSV!')
@@ -179,29 +178,37 @@ def prepare_text(text):
 
 text = prepare_text(text)
 
+
 # # get year from date
 # text['YEAR'] = text.DATE.str[:4]
+# sys.stdout.write('get year from date!')
+# sys.stdout.write('\n')
 # # convert years column to numeric
 # text['YEAR'] = text['YEAR'].astype(float)
+# sys.stdout.write('convert years column to numeric!')
+# sys.stdout.write('\n')
 # # fix problems with dates and remove non-alpha numeric characters from debate titles
 # for index, row in text.iterrows():
 #     # fix years after 1908
 #     if row['YEAR'] > 1908:
 #         text.loc[index, 'YEAR'] = np.NaN
-#         # forward fill missing dates
-#         text.loc[index, 'YEAR'] = row['YEAR'].fillna(method='ffill')
 #     # # compute decade
 #     # text['DECADE'] = (text['YEAR'].map(lambda x: int(x) - (int(x) % 10)))
 #     # remove non-alpha numeric characters from bill titles
 #     # text.loc[index, 'BILL'] = text['BILL'].map(lambda x: re.sub(r'[^A-Za-z0-9 ]', '', str(x)))
 #     text.loc[index, 'BILL'] = str(row.BILL).translate(None, string.digits + string.punctuation)
-# # drop some columns
-# text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
-# # convert integer speech acts to string and decode unicode strings
-# for index, row in text.iterrows():
+#     # convert integer speech acts to string and decode unicode strings
 #     if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
 #         text.loc[index, 'SPEECH_ACT'] = ''
 #     text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
+# sys.stdout.write('fix problems with dates, debate titles, unicode!')
+# sys.stdout.write('\n')
+# # forward fill missing dates
+# text['YEAR'].fillna(method='ffill', inplace=True)
+# sys.stdout.write('forward fill dates!')
+# sys.stdout.write('\n')
+# # drop some columns
+# text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
 # # write to csv
 # text.to_csv(path + 'membercontributions-20170807.tsv', sep='\t', index=False)
 # sys.stdout.write('processed corpus written to TSV!')
@@ -228,6 +235,7 @@ text = prepare_text(text)
 # text = pd.concat([text, seed]).reset_index(drop=True)
 # sys.stdout.write('corpus processed successfully!')
 # sys.stdout.write('\n')
+
 
 # Initialize a dictionary of all unique words, stemmer and lemmatizer
 master_dict = {}
