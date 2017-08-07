@@ -119,7 +119,7 @@ sys.stdout.write('\n')
 #     # get year from date
 #     text['YEAR'] = text.DATE.str[:4]
 #     # convert years column to numeric
-#     text['YEAR'] = text['YEAR'].astype(int)
+#     text['YEAR'] = text['YEAR'].astype(float)
 #     # fix problems with dates and remove non-alpha numeric characters from debate titles
 #     for index, row in text.iterrows():
 #         # fix years after 1908
@@ -175,7 +175,7 @@ text['YEAR'] = text.DATE.str[:4]
 sys.stdout.write('get year from date!')
 sys.stdout.write('\n')
 # convert years column to numeric
-text['YEAR'] = text['YEAR'].astype(int)
+text['YEAR'] = text['YEAR'].astype(float)
 sys.stdout.write('convert years column to numeric!')
 sys.stdout.write('\n')
 # fix problems with dates and remove non-alpha numeric characters from debate titles
