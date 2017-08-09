@@ -183,9 +183,11 @@ with open(path + 'membercontributions-20170807.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
+sys.stdout.write(text.columns.values)
+sys.stdout.write('\n')
 
 # groupby year, decade, bill, and concatenate speech act with a space
-text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(map(str, x))).reset_index()
 # append seeds to text
 with open(path_seed + 'four_corpus.txt', 'r') as f:
     seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
