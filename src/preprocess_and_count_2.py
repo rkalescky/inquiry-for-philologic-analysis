@@ -78,7 +78,7 @@ def prepare_text(text):
     # drop some columns
     text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
     # write to csv
-    text.to_csv(path + 'membercontributions-20170807.tsv', sep='\t', index=False)
+    text.to_csv(path + 'membercontributions-20170810.tsv', sep='\t', index=False)
     sys.stdout.write('processed corpus written to TSV!')
     sys.stdout.write('\n')
 
@@ -133,14 +133,14 @@ def build_dict_replace_words(row, mdict):
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
-    with open(path + "mc-20170809-stemmed.txt", "a") as f:
+    with open(path + "mc-20170810-stemmed.txt", "a") as f:
         f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
     # write speech act with stems or dummy
     for i in range(len(words)):
-        with open(path + "mc-20170809-stemmed.txt", "a") as f:
+        with open(path + "mc-20170810-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path + "mc-20170809-stemmed.txt", "a") as f:
+    with open(path + "mc-20170810-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
@@ -150,7 +150,7 @@ def build_dict_replace_words(row, mdict):
 # @profile
 def count_words(row, mdict):
     # read sa from file and create sa vector
-    with open(path + 'mc-20170727-stemmed.txt', 'r') as f:
+    with open(path + 'mc-20170810-stemmed.txt', 'r') as f:
         sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
@@ -164,14 +164,14 @@ def count_words(row, mdict):
 # Set the paths
 path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
 path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
-path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+#path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
 with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
-with open(path + 'membercontributions_test.tsv', 'r') as f:
-    text = pd.read_csv(f, sep='\t')
+#with open(path + 'membercontributions_test.tsv', 'r') as f:
+#    text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 
@@ -179,7 +179,7 @@ sys.stdout.write('\n')
 text = prepare_text(text)
 
 # read from csv after doing prepare_text once
-# with open(path + 'membercontributions-20170807.tsv', 'r') as f:
+# with open(path + 'membercontributions-20170810.tsv', 'r') as f:
 #     text = pd.read_csv(f, sep='\t')
 # sys.stdout.write('corpus read in successfully!')
 # sys.stdout.write('\n')
