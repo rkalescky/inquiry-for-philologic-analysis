@@ -62,9 +62,13 @@ def prepare_text(text):
         # convert integer speech acts to string and decode unicode strings
         if type(row['SPEECH_ACT']) != str and type(row['SPEECH_ACT']) != unicode:
             text.loc[index, 'SPEECH_ACT'] = str('')
-        if type(row['SPEECH_ACT']) is unicode:
+        elif type(row['SPEECH_ACT']) is unicode:
             text.loc[index, "SPEECH_ACT"] = row["SPEECH_ACT"].decode('utf-8')
     sys.stdout.write('fix problems with dates, debate titles, unicode!')
+    sys.stdout.write('\n')
+    # filter out nan speech act rows
+    text = text[pd.notnull(text['SPEECH_ACT'])]
+    sys.stdout.write('drop NaN speech acts!')
     sys.stdout.write('\n')
     # forward fill missing dates
     text['YEAR'].fillna(method='ffill', inplace=True)
@@ -77,13 +81,9 @@ def prepare_text(text):
     sys.stdout.write('\n')
     # drop some columns
     text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
-    # write to csv
-    text.to_csv(path + 'membercontributions-20170810.tsv', sep='\t', index=False)
-    sys.stdout.write('processed corpus written to TSV!')
+    sys.stdout.write('hansard corpus processed succesfully!')
     sys.stdout.write('\n')
 
-    # groupby year, decade, bill, and concatenate speech act with a space
-    text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
     # append seeds to text
     with open(path_seed + 'four_corpus.txt', 'r') as f:
         seed = pd.read_csv(f, sep='\t', header=None, names=['SPEECH_ACT'])
@@ -97,7 +97,10 @@ def prepare_text(text):
     seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
     # append to end of text df
     text = pd.concat([text, seed]).reset_index(drop=True)
-    sys.stdout.write('corpus processed successfully!')
+    
+    # write to csv
+    text.to_csv(path + 'membercontributions-20170814.tsv', sep='\t', index=False)
+    sys.stdout.write('corpus and seed processed and written successfully!')
     sys.stdout.write('\n')
 
     return(text)
@@ -106,11 +109,13 @@ def prepare_text(text):
 # function to build up dictionary of all unique words and replace words in corpus with stems
 # @profile
 def build_dict_replace_words(row, mdict):
-
+    
     # get unique words in speech act
     vectorizer = CountVectorizer()
-    vec = vectorizer.fit_transform([row[2]])
+    vec = vectorizer.fit_transform([row[1]])
     words = vectorizer.get_feature_names()
+    sys.stdout.write('count vectorizer and fit transform!')
+    sys.stdout.write('\n')
 
     # check dictionary for words and add if not present
     # check if word is already in dict
@@ -133,14 +138,14 @@ def build_dict_replace_words(row, mdict):
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
-    with open(path + "mc-20170810-stemmed.txt", "a") as f:
-        f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
+    with open(path + "mc-20170814-stemmed.txt", "a") as f:
+        f.write(str(row[0]) + '\t' + str(row[2]) + '\t')
     # write speech act with stems or dummy
     for i in range(len(words)):
-        with open(path + "mc-20170810-stemmed.txt", "a") as f:
+        with open(path + "mc-20170814-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path + "mc-20170810-stemmed.txt", "a") as f:
+    with open(path + "mc-20170814-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
@@ -150,7 +155,7 @@ def build_dict_replace_words(row, mdict):
 # @profile
 def count_words(row, mdict):
     # read sa from file and create sa vector
-    with open(path + 'mc-20170810-stemmed.txt', 'r') as f:
+    with open(path + 'mc-20170814-stemmed.txt', 'r') as f:
         sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
@@ -179,10 +184,15 @@ sys.stdout.write('\n')
 text = prepare_text(text)
 
 # read from csv after doing prepare_text once
-# with open(path + 'membercontributions-20170810.tsv', 'r') as f:
-#     text = pd.read_csv(f, sep='\t')
-# sys.stdout.write('corpus read in successfully!')
-# sys.stdout.write('\n')
+#with open(path + 'membercontributions-20170810.tsv', 'r') as f:
+#    text = pd.read_csv(f, sep='\t')
+#sys.stdout.write('corpus read in successfully!')
+#sys.stdout.write('\n')
+
+# Concatenate speech acts to full debates
+text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+sys.stdout.write('speech acts successfully concatenated!')
+sys.stdout.write('\n')
 
 # Initialize a dictionary of all unique words, stemmer and lemmatizer
 master_dict = {}
