@@ -97,7 +97,7 @@ def prepare_text(text):
     seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
     # append to end of text df
     text = pd.concat([text, seed]).reset_index(drop=True)
-    
+
     # write to csv
     text.to_csv(path + 'membercontributions-20170814.tsv', sep='\t', index=False)
     sys.stdout.write('corpus and seed processed and written successfully!')
@@ -109,7 +109,7 @@ def prepare_text(text):
 # function to build up dictionary of all unique words and replace words in corpus with stems
 # @profile
 def build_dict_replace_words(row, mdict):
-    
+
     # get unique words in speech act
     vectorizer = CountVectorizer()
     vec = vectorizer.fit_transform([row[1]])
@@ -173,21 +173,21 @@ path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 #path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
-with open(path + 'membercontributions-20161026.tsv', 'r') as f:
-    text = pd.read_csv(f, sep='\t')
+# with open(path + 'membercontributions-20161026.tsv', 'r') as f:
+    # text = pd.read_csv(f, sep='\t')
 #with open(path + 'membercontributions_test.tsv', 'r') as f:
 #    text = pd.read_csv(f, sep='\t')
-sys.stdout.write('corpus read in successfully!')
-sys.stdout.write('\n')
+# sys.stdout.write('corpus read in successfully!')
+# sys.stdout.write('\n')
 
 # Prepare the Text
-text = prepare_text(text)
+# text = prepare_text(text)
 
-# read from csv after doing prepare_text once
-#with open(path + 'membercontributions-20170810.tsv', 'r') as f:
-#    text = pd.read_csv(f, sep='\t')
-#sys.stdout.write('corpus read in successfully!')
-#sys.stdout.write('\n')
+# Read from csv after doing prepare_text once
+with open(path + 'membercontributions-20170814.tsv', 'r') as f:
+   text = pd.read_csv(f, sep='\t')
+sys.stdout.write('corpus read in successfully!')
+sys.stdout.write('\n')
 
 # Concatenate speech acts to full debates
 text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
@@ -201,6 +201,7 @@ lemmatizer = WordNetLemmatizer()
 
 # Write stemmed corpus to file
 for index, row in text.iterrows():
+    sys.stdout.write(row[1])
     build_dict_replace_words(row, master_dict)
 
 # Vocabulary for counting words is unique set of values in master dict
