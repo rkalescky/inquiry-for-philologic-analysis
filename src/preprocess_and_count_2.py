@@ -97,6 +97,9 @@ def prepare_text(text):
     seed = seed[['BILL', 'YEAR', 'SPEECH_ACT']]
     # append to end of text df
     text = pd.concat([text, seed]).reset_index(drop=True)
+    
+    # remove tabs from text columns
+    # remove quotes too?
 
     # write to csv
     text.to_csv(path + 'membercontributions-20170814.tsv', sep='\t', index=False)
@@ -112,7 +115,7 @@ def build_dict_replace_words(row, mdict):
 
     # get unique words in speech act
     vectorizer = CountVectorizer()
-    vec = vectorizer.fit_transform([row[1]])
+    vec = vectorizer.fit_transform([row[2]])
     words = vectorizer.get_feature_names()
     sys.stdout.write('count vectorizer and fit transform!')
     sys.stdout.write('\n')
@@ -138,14 +141,14 @@ def build_dict_replace_words(row, mdict):
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
-    with open(path + "mc-20170814-stemmed.txt", "a") as f:
-        f.write(str(row[0]) + '\t' + str(row[2]) + '\t')
+    with open(path + "mc-20170816-stemmed.txt", "a") as f:
+        f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
     # write speech act with stems or dummy
     for i in range(len(words)):
-        with open(path + "mc-20170814-stemmed.txt", "a") as f:
+        with open(path + "mc-20170816-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path + "mc-20170814-stemmed.txt", "a") as f:
+    with open(path + "mc-20170816-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
@@ -155,7 +158,7 @@ def build_dict_replace_words(row, mdict):
 # @profile
 def count_words(row, mdict):
     # read sa from file and create sa vector
-    with open(path + 'mc-20170814-stemmed.txt', 'r') as f:
+    with open(path + 'mc-20170816-stemmed.txt', 'r') as f:
         sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2])
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
@@ -189,8 +192,13 @@ with open(path + 'membercontributions-20170814.tsv', 'r') as f:
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 
+# Remove rows with missing speech acts
+sys.stdout.write(text.SPEECH_ACT.isnull().sum())
+text = text[pd.notnull(text.SPEECH_ACT)]
+sys.stdout.write(text.SPEECH_ACT.isnull().sum())
+
 # Concatenate speech acts to full debates
-text = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+deb = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 sys.stdout.write('speech acts successfully concatenated!')
 sys.stdout.write('\n')
 
@@ -200,8 +208,8 @@ stemmer = SnowballStemmer('english')
 lemmatizer = WordNetLemmatizer()
 
 # Write stemmed corpus to file
-for index, row in text.iterrows():
-    sys.stdout.write(row[1])
+for index, row in deb.iterrows():
+    print(row)
     build_dict_replace_words(row, master_dict)
 
 # Vocabulary for counting words is unique set of values in master dict
