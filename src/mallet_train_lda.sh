@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #SBATCh -C intel
-#SBATCH -n 16 
-#SBATCH -t 48:00:00
+#SBATCH -n 1 
+#SBATCH -t 72:00:00
 #SBATCH --mem=256G
 
 module load mallet/2.0.8rc3
 
-mallet train-topics --input /users/alee35/scratch/land-wars-devel-data/cleanbills-20170626.mallet --num-topics 500 --optimize-interval 10 --output-state /users/alee35/scratch/land-wars-devel-data/topic_state_500.gz --output-topic-keys /users/alee35/scratch/land-wars-devel-data/keys_500.txt --output-doc-topics /users/alee35/scratch/land-wars-devel-data/composition_500.txt
+mallet train-topics --input /gpfs/data/datasci/paper-m/data/debates/cleanbills-20170820.mallet --num-topics 500 --optimize-interval 10 --output-state /gpfs/data/datasci/paper-m/data/debates/topic_state_500.gz --output-topic-keys /gpfs/data/datasci/paper-m/data/debates/keys_500.txt --output-doc-topics /gpfs/data/datasci/paper-m/data/debates/composition_500.txt

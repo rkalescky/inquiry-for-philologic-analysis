@@ -193,9 +193,9 @@ sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 
 # Remove rows with missing speech acts
-sys.stdout.write(text.SPEECH_ACT.isnull().sum())
+print(text.SPEECH_ACT.isnull().sum())
 text = text[pd.notnull(text.SPEECH_ACT)]
-sys.stdout.write(text.SPEECH_ACT.isnull().sum())
+print(text.SPEECH_ACT.isnull().sum())
 
 # Concatenate speech acts to full debates
 deb = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
