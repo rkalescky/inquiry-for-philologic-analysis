@@ -1,3 +1,4 @@
+*.py.lprof
 *.DS_Store
 slurm*
 */membercontributions*
