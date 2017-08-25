@@ -199,18 +199,18 @@ def count_words(row, mdict):
 
 
 # Set the paths
-# path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
-# path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
-path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
+path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
+# path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+# path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
-# with open(path + 'membercontributions-20161026.tsv', 'r') as f:
-    # text = pd.read_csv(f, sep='\t')
-with open(path + 'membercontributions_test.tsv', 'r') as f:
-   text = pd.read_csv(f, sep='\t')
-# sys.stdout.write('corpus read in successfully!')
-# sys.stdout.write('\n')
+with open(path + 'membercontributions-20161026.tsv', 'r') as f:
+    text = pd.read_csv(f, sep='\t')
+# with open(path + 'membercontributions_test.tsv', 'r') as f:
+   # text = pd.read_csv(f, sep='\t')
+sys.stdout.write('corpus read in successfully!')
+sys.stdout.write('\n')
 
 # Prepare the Text
 text = prepare_text(text)
@@ -218,8 +218,8 @@ text = prepare_text(text)
 # Read from csv after doing prepare_text once
 # with open(path + 'membercontributions-20170824.tsv', 'r') as f:
    # text = pd.read_csv(f, sep='\t')
-sys.stdout.write('corpus read in successfully!')
-sys.stdout.write('\n')
+# sys.stdout.write('corpus read in successfully!')
+# sys.stdout.write('\n')
 
 # Remove rows with missing speech acts
 print(text.SPEECH_ACT.isnull().sum())
@@ -242,6 +242,8 @@ with open(path + 'stoplists/en.txt') as f:
 with open(path + 'stoplists/stopwords-20170628.txt') as f:
     custom_stop = f.read().splitlines()
 custom_stopwords = en_stop + custom_stop
+sys.stdout.write('custom stopword list created successfully!')
+sys.stdout.write('\n')
 
 # Write stemmed corpus to file
 for index, row in deb.iterrows():
@@ -254,6 +256,8 @@ with open(path + 'master_dict.pickle', 'wb') as handle:
 # Load and deserialize pickled dict
 # with open(path + 'master_dict.pickle', 'rb') as handle:
 #     master_dict = pickle.load(handle)
+sys.stdout.write('master dictionary pickled successfully!')
+sys.stdout.write('\n')
 
 # Vocabulary for counting words is unique set of values in master dict
 vocabulary = set(master_dict.values())
