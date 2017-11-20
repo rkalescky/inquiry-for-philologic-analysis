@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import numpy as np
 import pandas as pd
 import sys
@@ -149,14 +151,14 @@ def build_dict_replace_words(row, mdict, custom_stopwords):
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
-    with open(path + "mc-20170824-stemmed.txt", "a") as f:
+    with open(path + "../debates/mc-20170824-stemmed.txt", "a") as f:
         f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
     # write speech act with stems or dummy
     for i in range(len(words)):
-        with open(path + "mc-20170824-stemmed.txt", "a") as f:
+        with open(path + "../debates/mc-20170824-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path + "mc-20170824-stemmed.txt", "a") as f:
+    with open(path + "../mc-20170824-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
@@ -167,7 +169,10 @@ def read_data(file):
     try:
         df = pd.read_csv(file, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
                          quoting=csv.QUOTE_NONE)
-    except pd.io.common.EmptyDataError:
+    #except pd.io.common.EmptyDataError:
+    except IOError:
+        sys.stdout.write('cannot read speech act into dataframe')
+        sys.stdout.write('\n')
         df = pd.DataFrame()
     return df
 
@@ -176,10 +181,10 @@ def read_data(file):
 # @profile
 def count_words(row, mdict):
     # read sa from file and create sa vector
-    # with open(path + 'mc-20170824-stemmed.txt', 'r') as f:
-    #     sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
-    #                      quoting=csv.QUOTE_NONE)
-    sa = read_data(path + 'mc-20170824-stemmed.txt')
+    #with open(path + '../debates/mc-20170824-stemmed.txt', 'r') as f:
+    #    sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
+    #                     quoting=csv.QUOTE_NONE)
+    sa = read_data(path + '../mc-20170824-stemmed.txt')
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
     if sa.shape[0] > 0:
@@ -205,21 +210,21 @@ path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 # path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 
 # Load the raw data to a dataframe
-with open(path + 'membercontributions-20161026.tsv', 'r') as f:
-    text = pd.read_csv(f, sep='\t')
+#with open(path + 'membercontributions-20161026.tsv', 'r') as f:
+#    text = pd.read_csv(f, sep='\t')
 # with open(path + 'membercontributions_test.tsv', 'r') as f:
    # text = pd.read_csv(f, sep='\t')
-sys.stdout.write('corpus read in successfully!')
-sys.stdout.write('\n')
+#sys.stdout.write('corpus read in successfully!')
+#sys.stdout.write('\n')
 
 # Prepare the Text
-text = prepare_text(text)
+#text = prepare_text(text)
 
 # Read from csv after doing prepare_text once
-# with open(path + 'membercontributions-20170824.tsv', 'r') as f:
-   # text = pd.read_csv(f, sep='\t')
-# sys.stdout.write('corpus read in successfully!')
-# sys.stdout.write('\n')
+with open(path + 'membercontributions-20170824.tsv', 'r') as f:
+   text = pd.read_csv(f, sep='\t')
+sys.stdout.write('corpus read in successfully!')
+sys.stdout.write('\n')
 
 # Remove rows with missing speech acts
 print(text.SPEECH_ACT.isnull().sum())
@@ -237,9 +242,9 @@ stemmer = SnowballStemmer('english')
 lemmatizer = WordNetLemmatizer()
 
 # Read in custom stopword lists
-with open(path + 'stoplists/en.txt') as f:
+with open('../data/stoplists/en.txt') as f:
     en_stop = f.read().splitlines()
-with open(path + 'stoplists/stopwords-20170628.txt') as f:
+with open('../data/stoplists/stopwords-20170628.txt') as f:
     custom_stop = f.read().splitlines()
 custom_stopwords = en_stop + custom_stop
 sys.stdout.write('custom stopword list created successfully!')
