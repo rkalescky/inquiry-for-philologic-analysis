@@ -80,10 +80,10 @@ def prepare_text(text):
     text['DATE'].fillna(method='ffill', inplace=True)
     sys.stdout.write('forward fill dates!')
     sys.stdout.write('\n')
-    # concatenate BILL and DATE to get new DEBATE ID
-    text['BILL'] = text['BILL'] + ' ' + text['DATE']
-    sys.stdout.write('bill and date ID created!')
-    sys.stdout.write('\n')
+    # # concatenate BILL and DATE to get new DEBATE ID
+    # text['BILL'] = text['BILL'] + ' ' + text['DATE']
+    # sys.stdout.write('bill and date ID created!')
+    # sys.stdout.write('\n')
     # drop some columns
     text.drop(['ID', 'DATE', 'MEMBER', 'CONSTITUENCY'], axis=1, inplace=True)
     sys.stdout.write('hansard corpus processed succesfully!')
@@ -107,7 +107,7 @@ def prepare_text(text):
     # remove quotes too?
 
     # write to csv
-    text.to_csv(path + 'membercontributions-20170824.tsv', sep='\t', index=False)
+    text.to_csv(path + 'membercontributions-20171120.tsv', sep='\t', index=False)
     sys.stdout.write('corpus and seed processed and written successfully!')
     sys.stdout.write('\n')
 
@@ -224,7 +224,7 @@ sys.stdout = open('../logs/log-' + date + '.txt', 'w')
 #text = prepare_text(text)
 
 # Read from csv after doing prepare_text once
-with open(path + 'membercontributions-20170824.tsv', 'r') as f:
+with open(path + 'membercontributions-20171120.tsv', 'r') as f:
    text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
