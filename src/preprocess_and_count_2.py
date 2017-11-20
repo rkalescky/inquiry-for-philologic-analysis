@@ -225,6 +225,7 @@ with open(path + 'membercontributions-20170824.tsv', 'r') as f:
    text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
+print(text.isnull().sum())
 
 # Remove rows with missing speech acts
 print(text.SPEECH_ACT.isnull().sum())
