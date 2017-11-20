@@ -235,7 +235,7 @@ deb = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).re
 sys.stdout.write('speech acts successfully concatenated!')
 sys.stdout.write('\n')
 print(deb.isnull().sum())
-for index, row in deb.iterrows:
+for index, row in deb.iterrows():
     print(row['BILL'])
 
 # # Initialize a dictionary of all unique words, stemmer and lemmatizer
