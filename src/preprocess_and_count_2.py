@@ -232,10 +232,11 @@ print(text.SPEECH_ACT.isnull().sum())
 text = text[pd.notnull(text.SPEECH_ACT)]
 print(text.SPEECH_ACT.isnull().sum())
 
-# # Concatenate speech acts to full debates
-# deb = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
-# sys.stdout.write('speech acts successfully concatenated!')
-# sys.stdout.write('\n')
+# Concatenate speech acts to full debates
+deb = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
+sys.stdout.write('speech acts successfully concatenated!')
+sys.stdout.write('\n')
+print(deb)
 
 # # Initialize a dictionary of all unique words, stemmer and lemmatizer
 # master_dict = {}
