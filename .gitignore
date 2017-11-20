@@ -2,3 +2,4 @@
 *.DS_Store
 slurm*
 */membercontributions*
+logs/

@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 import sys
+import time
 import string
 import csv
 import pickle
@@ -208,7 +209,8 @@ path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
 path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 # path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 # path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
-sys.stdout = open('../logs/log.txt', 'w')
+date = time.strftime("%Y%m%d")
+sys.stdout = open('../logs/log-' + date + '.txt', 'w')
 
 # Load the raw data to a dataframe
 #with open(path + 'membercontributions-20161026.tsv', 'r') as f:
