@@ -152,14 +152,14 @@ def build_dict_replace_words(row, mdict, custom_stopwords):
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
-    with open(path + "../debates/mc-20170824-stemmed.txt", "a") as f:
+    with open(path + "../debates/mc-20171122-stemmed.txt", "a") as f:
         f.write(str(row[0]) + '\t' + str(row[1]) + '\t')
     # write speech act with stems or dummy
     for i in range(len(words)):
-        with open(path + "../debates/mc-20170824-stemmed.txt", "a") as f:
+        with open(path + "../debates/mc-20171122-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path + "../mc-20170824-stemmed.txt", "a") as f:
+    with open(path + "../mc-20171122-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
