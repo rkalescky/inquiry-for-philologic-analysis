@@ -209,6 +209,8 @@ path = '/gpfs/data/datasci/paper-m/data/speeches_dates/'
 path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 # path = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
 # path_seed = '/users/alee35/Google Drive/repos/inquiry-for-philologic-analysis/data/'
+
+# Write to a log file
 date = time.strftime("%Y%m%d")
 sys.stdout = open('../logs/log-' + date + '.txt', 'w')
 
@@ -218,6 +220,11 @@ with open(path + 'membercontributions-20161026.tsv', 'r') as f:
 #with open(path + 'membercontributions_test.tsv', 'r') as f:
 #    text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
+sys.stdout.write('\n')
+
+# Remove rows with missing speech acts
+text = text[pd.notnull(text.SPEECH_ACT)]
+sys.stdout.write('removed 110 rows with missing speech acts')
 sys.stdout.write('\n')
 
 # Prepare the Text
@@ -230,9 +237,6 @@ sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')
 print(text.isnull().sum())
 
-# Remove rows with missing speech acts
-text = text[pd.notnull(text.SPEECH_ACT)]
-
 # Concatenate speech acts to full debates
 deb = text.groupby(['BILL', 'YEAR'])['SPEECH_ACT'].agg(lambda x: ' '.join(x)).reset_index()
 sys.stdout.write('speech acts successfully concatenated!')
@@ -241,74 +245,74 @@ print(deb.isnull().sum())
 for index, row in deb.iterrows():
     print(row['BILL'])
 
-# # Initialize a dictionary of all unique words, stemmer and lemmatizer
-# master_dict = {}
-# stemmer = SnowballStemmer('english')
-# lemmatizer = WordNetLemmatizer()
+# Initialize a dictionary of all unique words, stemmer and lemmatizer
+master_dict = {}
+stemmer = SnowballStemmer('english')
+lemmatizer = WordNetLemmatizer()
 
-# # Read in custom stopword lists
-# with open('../data/stoplists/en.txt') as f:
-#     en_stop = f.read().splitlines()
-# with open('../data/stoplists/stopwords-20170628.txt') as f:
-#     custom_stop = f.read().splitlines()
-# custom_stopwords = en_stop + custom_stop
-# sys.stdout.write('custom stopword list created successfully!')
-# sys.stdout.write('\n')
+# Read in custom stopword lists
+with open('../data/stoplists/en.txt') as f:
+    en_stop = f.read().splitlines()
+with open('../data/stoplists/stopwords-20170628.txt') as f:
+    custom_stop = f.read().splitlines()
+custom_stopwords = en_stop + custom_stop
+sys.stdout.write('custom stopword list created successfully!')
+sys.stdout.write('\n')
 
-# # Write stemmed corpus to file
-# for index, row in deb.iterrows():
-#     print(row)
-#     build_dict_replace_words(row, master_dict, custom_stopwords)
+# Write stemmed corpus to file
+for index, row in deb.iterrows():
+    print(row)
+    build_dict_replace_words(row, master_dict, custom_stopwords)
 
-# # Pickle Master Dictionary to check topic modeling later
-# with open(path + 'master_dict.pickle', 'wb') as handle:
-#     pickle.dump(master_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-# # Load and deserialize pickled dict
-# # with open(path + 'master_dict.pickle', 'rb') as handle:
-# #     master_dict = pickle.load(handle)
-# sys.stdout.write('master dictionary pickled successfully!')
-# sys.stdout.write('\n')
+# Pickle Master Dictionary to check topic modeling later
+with open(path + 'master_dict.pickle', 'wb') as handle:
+    pickle.dump(master_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+# Load and deserialize pickled dict
+# with open('../data/master_dict.pickle', 'rb') as handle:
+#     master_dict = pickle.load(handle)
+sys.stdout.write('master dictionary pickled successfully!')
+sys.stdout.write('\n')
 
-# # Vocabulary for counting words is unique set of values in master dict
-# vocabulary = set(master_dict.values())
-# sys.stdout.write('vocabulary built successfully!')
-# sys.stdout.write('\n')
+# Vocabulary for counting words is unique set of values in master dict
+vocabulary = set(master_dict.values())
+sys.stdout.write('vocabulary built successfully!')
+sys.stdout.write('\n')
 
-# # Count words and build debate doc-term matrix
-# group = text.groupby(["BILL"], sort=False)
-# doc_term_matrix = np.zeros((len(group), len(vocabulary)), dtype=int)
+# Count words and build debate doc-term matrix
+group = text.groupby(["BILL"], sort=False)
+doc_term_matrix = np.zeros((len(group), len(vocabulary)), dtype=int)
 
-# group_ind = 0
-# for name, df in group:
-#     # need debate index, speech act index, and sa within debate index
-#     # group_ind = group.indices.get(name)     # debate index
-#     print("group_ind: " + str(group_ind))
-#     seq_ind = df.index.tolist()             # sa index
-#     df = df.assign(SEQ_IND=seq_ind)
-#     df.reset_index(inplace=True)            # sa w/i debate index
-#     # initialize debate matrix
-#     num_docs = df.shape[0]
-#     debate_matrix = np.zeros((num_docs, len(vocabulary)), dtype=int)
-#     # fill debate matrix, speech act by speech act
-#     for index, row in df.iterrows():
-#         sa_vec, dummy_ind, stopword_ind = count_words(row, vocabulary)
-#         debate_matrix[index, ] = sa_vec
-#     # sum debate matrix rows to get debate vector
-#     debate_vec = debate_matrix.sum(axis=0)
-#     # build document term matrix, debate by debate
-#     doc_term_matrix[group_ind, ] = debate_vec
-#     # add one to debate index
-#     group_ind += 1
-# sys.stdout.write('doc-term matrix built successfully!')
-# sys.stdout.write('\n')
+group_ind = 0
+for name, df in group:
+    # need debate index, speech act index, and sa within debate index
+    # group_ind = group.indices.get(name)     # debate index
+    print("group_ind: " + str(group_ind))
+    seq_ind = df.index.tolist()             # sa index
+    df = df.assign(SEQ_IND=seq_ind)
+    df.reset_index(inplace=True)            # sa w/i debate index
+    # initialize debate matrix
+    num_docs = df.shape[0]
+    debate_matrix = np.zeros((num_docs, len(vocabulary)), dtype=int)
+    # fill debate matrix, speech act by speech act
+    for index, row in df.iterrows():
+        sa_vec, dummy_ind, stopword_ind = count_words(row, vocabulary)
+        debate_matrix[index, ] = sa_vec
+    # sum debate matrix rows to get debate vector
+    debate_vec = debate_matrix.sum(axis=0)
+    # build document term matrix, debate by debate
+    doc_term_matrix[group_ind, ] = debate_vec
+    # add one to debate index
+    group_ind += 1
+sys.stdout.write('doc-term matrix built successfully!')
+sys.stdout.write('\n')
 
-# # Print number of correctly/incorrectly spelled words
-# nr_stopwords = doc_term_matrix[:, stopword_ind].sum()
-# nr_incorrectly_sp = doc_term_matrix[:, dummy_ind].sum()
-# nr_correctly_sp = doc_term_matrix.sum() - nr_incorrectly_sp
-# sys.stdout.write('Number stopwords: ' + str(nr_stopwords))
-# sys.stdout.write('\n')
-# sys.stdout.write('Number incorrectly spelled: ' + str(nr_incorrectly_sp))
-# sys.stdout.write('\n')
-# sys.stdout.write('Number correctly spelled: ' + str(nr_correctly_sp))
-# sys.stdout.write('\n')
+# Print number of correctly/incorrectly spelled words
+nr_stopwords = doc_term_matrix[:, stopword_ind].sum()
+nr_incorrectly_sp = doc_term_matrix[:, dummy_ind].sum()
+nr_correctly_sp = doc_term_matrix.sum() - nr_incorrectly_sp
+sys.stdout.write('Number stopwords: ' + str(nr_stopwords))
+sys.stdout.write('\n')
+sys.stdout.write('Number incorrectly spelled: ' + str(nr_incorrectly_sp))
+sys.stdout.write('\n')
+sys.stdout.write('Number correctly spelled: ' + str(nr_correctly_sp))
+sys.stdout.write('\n')
