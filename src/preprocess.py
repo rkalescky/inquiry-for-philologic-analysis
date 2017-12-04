@@ -13,10 +13,8 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.snowball import SnowballStemmer
 import enchant
-# import line_profiler
 
 
-# @profile
 def tag2pos(tag, returnNone=False):
     ap_tag = {'NN': wn.NOUN, 'JJ': wn.ADJ,
               'VB': wn.VERB, 'RB': wn.ADV}
@@ -28,7 +26,6 @@ def tag2pos(tag, returnNone=False):
     sys.stdout.write('\n')
 
 
-# @profile
 def lemmatize_pos(x):
     tags = pos_tag(x)
     lemmas = []
@@ -45,7 +42,6 @@ def lemmatize_pos(x):
     sys.stdout.write('\n')
 
 
-# @profile
 def prepare_text(text):
     # get year from date
     text['YEAR'] = text.DATE.str[:4]
@@ -179,7 +175,6 @@ def read_data(file):
 
 
 # function to count correctly spelled and incorrectly spelled words
-# @profile
 def count_words(row, mdict):
     # read sa from file and create sa vector
     #with open(path + '../debates/mc-20170824-stemmed.txt', 'r') as f:
@@ -214,6 +209,8 @@ path_seed = '/gpfs/data/datasci/paper-m/data/seed/'
 date = time.strftime("%Y%m%d")
 sys.stdout = open('../logs/log-' + date + '.txt', 'w')
 
+
+# ----------------------------------
 # Load the raw data to a dataframe
 with open(path + 'membercontributions-20161026.tsv', 'r') as f:
     text = pd.read_csv(f, sep='\t')
@@ -229,6 +226,7 @@ sys.stdout.write('\n')
 
 # Prepare the Text
 text = prepare_text(text)
+# ----------------------------------
 
 # Read from csv after doing prepare_text once
 with open(path + 'membercontributions-20171120.tsv', 'r') as f:
