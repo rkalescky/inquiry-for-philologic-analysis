@@ -211,25 +211,27 @@ sys.stdout = open('../logs/log-' + date + '.txt', 'w')
 
 
 # ----------------------------------
-# Load the raw data to a dataframe
-with open(path + 'membercontributions-20161026.tsv', 'r') as f:
-    text = pd.read_csv(f, sep='\t')
-#with open(path + 'membercontributions_test.tsv', 'r') as f:
-#    text = pd.read_csv(f, sep='\t')
-sys.stdout.write('corpus read in successfully!')
-sys.stdout.write('\n')
+# # Load the raw data to a dataframe
+# with open(path + 'membercontributions-20161026.tsv', 'r') as f:
+#     text = pd.read_csv(f, sep='\t')
+# #with open(path + 'membercontributions_test.tsv', 'r') as f:
+# #    text = pd.read_csv(f, sep='\t')
+# sys.stdout.write('corpus read in successfully!')
+# sys.stdout.write('\n')
 
-# Remove rows with missing speech acts
-text = text[pd.notnull(text.SPEECH_ACT)]
-sys.stdout.write('removed 110 rows with missing speech acts')
-sys.stdout.write('\n')
+# # Remove rows with missing speech acts
+# text = text[pd.notnull(text.SPEECH_ACT)]
+# sys.stdout.write('removed 110 rows with missing speech acts')
+# sys.stdout.write('\n')
 
-# Prepare the Text
-text = prepare_text(text)
+# # Prepare the Text
+# text = prepare_text(text)
 # ----------------------------------
 
 # Read from csv after doing prepare_text once
-with open(path + 'membercontributions-20171120.tsv', 'r') as f:
+# with open(path + 'membercontributions-20171120.tsv', 'r') as f:
+#    text = pd.read_csv(f, sep='\t')
+with open(path + 'member_test.tsv', 'r') as f:
    text = pd.read_csv(f, sep='\t')
 sys.stdout.write('corpus read in successfully!')
 sys.stdout.write('\n')

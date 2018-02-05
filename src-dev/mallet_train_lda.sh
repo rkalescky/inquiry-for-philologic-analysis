@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCh -C intel
+#SBATCH -C intel
 #SBATCH -n 1 
 #SBATCH -t 72:00:00
 #SBATCH --mem=256G
