@@ -180,7 +180,7 @@ def count_words(row, mdict):
     #with open(path + '../debates/mc-20170824-stemmed.txt', 'r') as f:
     #    sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
     #                     quoting=csv.QUOTE_NONE)
-    sa = read_data(path + '../mc-20171122-stemmed.txt')
+    sa = read_data(path + '../debates/mc-20171122-stemmed.txt')
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
     if sa.shape[0] > 0:
