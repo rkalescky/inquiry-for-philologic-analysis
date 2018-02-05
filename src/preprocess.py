@@ -113,14 +113,12 @@ def prepare_text(text):
 # function to build up dictionary of all unique words and replace words in corpus with stems
 # @profile
 def build_dict_replace_words(row, mdict, custom_stopwords):
-
     # get unique words in speech act
     vectorizer = CountVectorizer()
     vec = vectorizer.fit_transform([row[2]])
     words = vectorizer.get_feature_names()
     sys.stdout.write('count vectorizer and fit transform!')
     sys.stdout.write('\n')
-
     # check dictionary for words and add if not present
     # check if word is already in dict
     not_cached = [word for word in words if word not in mdict]
@@ -144,7 +142,6 @@ def build_dict_replace_words(row, mdict, custom_stopwords):
     mdict.update(not_dummy_dict)
     sys.stdout.write('number of keys in master dict = {}'.format(len(mdict)))
     sys.stdout.write('\n')
-
     # replace words with stems or dummy
     veca = vec.toarray()
     # write metadata to file for mallet
@@ -165,7 +162,7 @@ def build_dict_replace_words(row, mdict, custom_stopwords):
 def read_data(file):
     try:
         df = pd.read_csv(file, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
-                         quoting=csv.QUOTE_NONE, header=None)
+                         quoting=csv.QUOTE_NONE)
     #except pd.io.common.EmptyDataError:
     except IOError:
         sys.stdout.write('cannot read speech act into dataframe')
@@ -177,12 +174,14 @@ def read_data(file):
 # function to count correctly spelled and incorrectly spelled words
 def count_words(row, mdict):
     # read sa from file and create sa vector
-    #with open(path + '../debates/mc-20170824-stemmed.txt', 'r') as f:
+    # with open(path + '../debates/mc-20171122-stemmed.txt', 'r') as f:
     #    sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
     #                     quoting=csv.QUOTE_NONE)
     sa = read_data(path + '../debates/mc-20171122-stemmed.txt')
     vectorizer2 = CountVectorizer(vocabulary=mdict)
+    print(sa)
     vec2 = vectorizer2.fit_transform(sa)
+    print("test2")
     if sa.shape[0] > 0:
         dummy_ind = vectorizer2.vocabulary_.get('williewaiola')
         stopword_ind = vectorizer2.vocabulary_.get('stopwordstop')
@@ -195,7 +194,6 @@ def count_words(row, mdict):
         vec2 = np.zeros((1, len(mdict)))
         sys.stdout.write('speech act {} EMPTY and zeroes added to debate {} matrix'.format(row.SEQ_IND, name))
         sys.stdout.write('\n')
-
     return(vec2, dummy_ind, stopword_ind)
 
 
@@ -255,6 +253,8 @@ with open('../data/stoplists/en.txt') as f:
     en_stop = f.read().splitlines()
 with open('../data/stoplists/stopwords-20170628.txt') as f:
     custom_stop = f.read().splitlines()
+en_stop = [word.strip() for word in en_stop]
+custom_stop = [word.strip() for word in custom_stop]
 custom_stopwords = en_stop + custom_stop
 sys.stdout.write('custom stopword list created successfully!')
 sys.stdout.write('\n')
@@ -295,6 +295,7 @@ for name, df in group:
     debate_matrix = np.zeros((num_docs, len(vocabulary)), dtype=int)
     # fill debate matrix, speech act by speech act
     for index, row in df.iterrows():
+        print("===========")
         sa_vec, dummy_ind, stopword_ind = count_words(row, vocabulary)
         debate_matrix[index, ] = sa_vec
     # sum debate matrix rows to get debate vector
