@@ -155,7 +155,7 @@ def build_dict_replace_words(row, mdict, custom_stopwords):
         with open(path + "../debates/mc-20171122-stemmed.txt", "a") as f:
             f.write((str(mdict.get(words[i])) + ' ') * int(veca[:, i]))
     # insert new line character after each speech act
-    with open(path + "../mc-20171122-stemmed.txt", "a") as f:
+    with open(path + "../debates/mc-20171122-stemmed.txt", "a") as f:
         f.write('\n')
         sys.stdout.write('speech act {} written to file'.format(index))
         sys.stdout.write('\n')
@@ -180,7 +180,7 @@ def count_words(row, mdict):
     #with open(path + '../debates/mc-20170824-stemmed.txt', 'r') as f:
     #    sa = pd.read_csv(f, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
     #                     quoting=csv.QUOTE_NONE)
-    sa = read_data(path + '../mc-20170824-stemmed.txt')
+    sa = read_data(path + '../mc-20171122-stemmed.txt')
     vectorizer2 = CountVectorizer(vocabulary=mdict)
     vec2 = vectorizer2.fit_transform(sa)
     if sa.shape[0] > 0:
