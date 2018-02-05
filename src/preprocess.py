@@ -165,7 +165,7 @@ def build_dict_replace_words(row, mdict, custom_stopwords):
 def read_data(file):
     try:
         df = pd.read_csv(file, sep='\t', skiprows=row.SEQ_IND, usecols=[2],
-                         quoting=csv.QUOTE_NONE)
+                         quoting=csv.QUOTE_NONE, header=None)
     #except pd.io.common.EmptyDataError:
     except IOError:
         sys.stdout.write('cannot read speech act into dataframe')
