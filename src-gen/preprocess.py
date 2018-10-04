@@ -272,7 +272,7 @@ def prepare_custom():
 
 def prepare_data(text):
     """
-    prepare the standardized TSV for MALLET and print some stats about the document
+    prepare the standardized TSV for MALLET and print some stats about the documents
     """
     # Initialize a dictionary of all unique words, stemmer and lemmatizer
     master_dict = {}

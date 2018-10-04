@@ -8,11 +8,12 @@ import rank_documents
 to_tsv = False
 custom_prep = False
 prepare_data = False
+mallet_import = True
 topic_model = True
 n_topics = [50]
 rank_documents = False
-percent = [.1]
-min_freq = 0.1
+n_docs = [100]
+topic_idx = [1,10,20,30]
 
 # set the paths
 # path = '/gpfs/data/datasci/paper-m/'
@@ -34,12 +35,15 @@ if prepare_data == True:
     # preprocess tsv data for topic modeling
     preprocess.prepare_data(text)        
 
+if mallet_import == True:
+    mallet.imprt()
+
 if topic_model == True:
     # import preprocessed data to mallet objects and train LDA model
     for topic in n_topics:
-        mallet.mallet(n_topics)
+        mallet.lda(n_topics)
 
 if rank_documents == True:
     # rank documents by chosen topic(s)
-    for p in percent:
-        rank_documents.subcorpus(percent, min_freq)
+    for n in n_docs:
+        rank_documents.subcorpus(topic_idx, n_docs)

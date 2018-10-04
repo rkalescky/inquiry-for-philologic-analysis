@@ -1,64 +1,49 @@
 import numpy as np
 import pandas as pd
 import csv
+from collections import Counter
 
 
-def rank_docs(an_array, percent, min_freq):
+def rank_docs(an_array):
     '''
-    takes an array as input and gets the row indexes for the top x percent
-    values above some threshold, min_freq, for each column in the array.
-    the output is an array containing the unique indexes ranked by frequency.
+    normalizes document-topic matrix by column sums, 
+    and ranks documents by normalized row sums
+
+    https://codereview.stackexchange.com/questions/65031/creating-a-list-containing-the-rank-of-the-elements-in-the-original-list
     '''
-    threshold = round(len(an_array) * percent)
-    ind_array = np.array([])
-    vals_array = np.array([])
-
-    for i in range(0, an_array.shape[1]):
-        ind = np.argpartition(an_array[:, i], -threshold)[-threshold:]
-        vals = an_array[:, i][ind]
-        ind_array = np.hstack((ind_array, ind))
-        vals_array = np.hstack((vals_array, vals))
-
-    # get counts of unique document indexes
-    ind_set = np.unique(ind_array, return_counts=True)
-
-    # get documents greater than some minimum frequency
-    ind_unique = ind_set[0]
-    ind_counts = ind_set[1]
-
-    # get document indices
-    indexes = np.array([i for (i, j) in zip(ind_unique,
-                                            ind_counts) if j >= min_freq])
-    counts = np.array([j for (i, j) in zip(ind_unique,
-                                           ind_counts) if j >= min_freq])
-
-    # sort the document indexes by number of times they appear
-    sort_order = counts[::1].argsort()
-    sorted_inds = indexes[sort_order]
-    return(sorted_inds)
+    col_sums = a.sum(axis=1)
+    new_matrix = a / col_sums[:, np.newaxis]
+    norm_doc_weights = new_matrix.sum(axis=0)
+    indices = list(range(len(norm_doc_weights)))
+    indices.sort(key=lambda x: norm_doc_weights[x])
+    norm_doc_ranks = [0] * len(indices)
+    for i, x in enumerate(indices): 
+        norm_doc_ranks[x] = i
+    # make doc rank and weight dictionary
+    doc_dict = dict(zip(norm_doc_ranks, norm_doc_weights))
+    return doc_dict
 
 
-def subcorpus(percent, min_freq):
-    idx = [49, 62, 68, 71, 101, 110, 125, 166, 249,
-        319, 348, 380, 382, 401, 406, 463]
-    names = ["Congested Districts Board", "Allotments", "Rent", "Compensation",
-            "Leases", "Land Reclamation", "Ordinance Survey", "Construction",
-            "Land Ownership", "Testimony to Rental History",
-            "Private Property Transfers", "Land Court", "Land Title Registration",
-            "Housing", "Eviction", "Crofters"]
+def subcorpus(topic_idx, n_docs):
 
     path = '../data/'
     with open(path + 'composition_' + n + '.txt', 'r') as f:
-        comp = np.loadtxt(f, usecols=idx, delimiter='\t')
+        comp = np.loadtxt(f, usecols=topics, delimiter='\t')
     with open(path + 'composition_' + n + '.txt', 'r') as f:
         titles = pd.read_csv(f, usecols=[1], delimiter='\t',
                             quoting=csv.QUOTE_NONE)
 
-    # rank documents
-    ranked_indexes = rank_docs(comp, percent, min_freq)
-    ranked_indexes.shape
+    subcomp = comp[:, topic_idx]
 
-    # get the debate titles by row number and write to csv
-    ranked_titles = titles.filter(items=ranked_indexes, axis=0)
-    ranked_titles
+    # rank documents
+    ranks_and_weights = rank_docs(subcomp)
+
+    # filter to top n documents by normalized doc weight
+    d = Counter(ranks_and_weights)
+    for k, v in d.most_common(n_docs):
+        print('document rank: {} has weight: {}'.format(k, v))
+
+    # get titles of top ranked docs
+
+
 
