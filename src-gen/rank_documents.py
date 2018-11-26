@@ -4,7 +4,7 @@ import csv
 from collections import Counter
 
 
-def rank_docs(an_array):
+def rank_docs(a):
     '''
     normalizes document-topic matrix by column sums, 
     and ranks documents by normalized row sums
@@ -21,7 +21,7 @@ def rank_docs(an_array):
         norm_doc_ranks[x] = i
     # make doc rank and weight dictionary
     doc_dict = dict(zip(norm_doc_ranks, norm_doc_weights))
-    return doc_dict
+    return col_sums, new_matrix, norm_doc_weights, norm_doc_ranks,doc_dict
 
 
 def subcorpus(topic_idx, n_docs):
@@ -46,4 +46,25 @@ def subcorpus(topic_idx, n_docs):
     # get titles of top ranked docs
 
 
+# Test
+t = np.array(
+    [[0.3,0.2,0.5],
+    [0.6,0.4,1],
+    [0.9,0.6,1.5],
+    [1.2,0.8,2]]
+    )
 
+
+col_sums, new_matrix, norm_doc_weights, norm_doc_ranks, doc_dict = rank_docs(t)
+
+print(t)
+print('================')
+print(col_sums) 
+print('================')
+print(new_matrix) 
+print('================')
+print(norm_doc_weights)
+print('================')
+print(norm_doc_ranks)
+print('================')
+print(doc_dict)

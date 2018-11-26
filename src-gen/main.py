@@ -1,3 +1,4 @@
+import os
 import raw_corpus2tsv
 import preprocess
 import mallet
@@ -36,9 +37,13 @@ if prepare_data == True:
     preprocess.prepare_data(text)        
 
 if mallet_import == True:
+    # load the mallet module
+    os.system("module load mallet/2.0.8rc3")
     mallet.imprt()
 
 if topic_model == True:
+    # load the mallet module
+    os.system("module load mallet/2.0.8rc3")
     # import preprocessed data to mallet objects and train LDA model
     for topic in n_topics:
         mallet.lda(n_topics)
