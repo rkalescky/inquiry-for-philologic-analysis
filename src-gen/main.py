@@ -5,12 +5,15 @@ import mallet
 import rank_documents
 
 
+os.system('module load anaconda/3-5.2.0')
+
 # change switches to trigger different parts of pipeline
 to_tsv = False
-custom_prep = False
-prepare_data = False
-mallet_import = True
-topic_model = True
+custom_prep = True
+data_dt = '20181210'
+prepare_data = True
+mallet_import = False
+topic_model = False
 n_topics = [50]
 rank_documents = False
 n_docs = [100]
@@ -25,11 +28,12 @@ topic_idx = [1,10,20,30]
 # ----------------- THE STEPS BELOW ARE SPECIFIC TO EACH DATA SET -----------------
 if to_tsv == True:
     # convert raw data to input tsv format
-    raw_corpus2tsv.xml2tsv("../test/")
+    # raw_corpus2tsv.xml2tsv("../test/")
+    raw_corpus2tsv.xml2tsv("/gpfs/data/datasci/paper-m/raw/hansard_xml/")
 
 if custom_prep == True:
     # do data prep custom to hansard
-    text = preprocess.prepare_custom()
+    text = preprocess.prepare_custom(data_dt)
 # ----------------- THE STEPS ABOVE ARE SPECIFIC TO EACH DATA SET -----------------
 
 if prepare_data == True:

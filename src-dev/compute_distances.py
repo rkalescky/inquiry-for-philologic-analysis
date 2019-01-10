@@ -36,7 +36,8 @@ def compute_distances(metric, outfile):
 
 
 # read document composition file (mallet output)
-with open(config.path_input + 'mallet_composition_500.txt', 'r') as f:
+with open('/Users/alee35/Dropbox (Brown)/hansard-mallet/mallet_composition_500.txt', 'r') as f:
+# with open(config.path_input + 'mallet_composition_500.txt', 'r') as f:
     hs = pd.read_csv(f, sep='\t', header=None, usecols=range(2, 501))
 doctopics = pd.DataFrame.as_matrix(hs)
 

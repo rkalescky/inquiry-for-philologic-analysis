@@ -23,6 +23,7 @@ def xml2tsv(filepath):
     dt = time.strftime("%Y%m%d")
     sys.stdout = open('../data/membercontributions-' + dt + '.tsv', 'w')
     sys.stdout.write("ID\tDATE\tBILL\tMEMBER\tCONSTITUENCY\tSPEECH_ACT") 
+    sys.stdout.write("\n")
 
     # print('done!')
 

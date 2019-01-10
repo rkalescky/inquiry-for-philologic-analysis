@@ -150,10 +150,10 @@ def build_dict_replace_words(row, mdict, custom_stopwords, index):
     # check if word is stopword, dummy, or not dummy
     dictionary = enchant.Dict("en_GB")
     stopword = [word for word in not_cached if word in custom_stopwords]
-    stopword_dict = dict(zip(stopword, ['stopwordstop'] * len(stopword)))
+    stopword_dict = dict(zip(stopword, ['stopword_replacement'] * len(stopword)))
     dummy = [word for word in not_cached if word not in custom_stopwords and
              word.isalpha() is False or dictionary.check(word) is False]
-    dummy_dict = dict(zip(dummy, ['williewaiola'] * len(dummy)))
+    dummy_dict = dict(zip(dummy, ['substitute_word'] * len(dummy)))
     # stem or lemmatize
     not_dummy = [word for word in words if word not in custom_stopwords and
                  word.isalpha() and
@@ -214,8 +214,8 @@ def count_words(row, mdict, name):
     vec2 = vectorizer2.fit_transform(sa)
     print("test2")
     if sa.shape[0] > 0:
-        dummy_ind = vectorizer2.vocabulary_.get('williewaiola')
-        stopword_ind = vectorizer2.vocabulary_.get('stopwordstop')
+        dummy_ind = vectorizer2.vocabulary_.get('substitute_word')
+        stopword_ind = vectorizer2.vocabulary_.get('stopword_replacement')
         vec2 = vec2.toarray()
         sys.stdout.write('speech act {} added to document {} matrix'.format(row.SEQ_IND, name))
         sys.stdout.write('\n')
@@ -228,7 +228,7 @@ def count_words(row, mdict, name):
     return(vec2, dummy_ind, stopword_ind)
 
 
-def prepare_custom():
+def prepare_custom(data_dt):
     """
     custom data preparation for Hansard TSV
     """
@@ -239,7 +239,7 @@ def prepare_custom():
 
     # ----------------------------------
     # Load the raw data to a dataframe
-    with open('../data/membercontributions-' + dt + '.tsv', 'r') as f:
+    with open('../data/membercontributions-' + data_dt + '.tsv', 'r') as f:
         text = pd.read_csv(f, sep='\t')
     sys.stdout.write('document read in successfully!')
     sys.stdout.write('\n')
@@ -254,7 +254,7 @@ def prepare_custom():
     
 
     # Read from csv after doing prepare_text once
-    # with open('../data/mc-midprep-' + date + '.tsv', 'r') as f:
+    # with open('../data/mc-midprep-' + data_dt + '.tsv', 'r') as f:
     # text = pd.read_csv(f, sep='\t')
     # sys.stdout.write('document read in successfully!')
     # sys.stdout.write('\n')
