@@ -1,3 +1,6 @@
+anaconda 3-5.2.0
+mallet 2.0.8rc3
+
 nltk
 pandas
 numpy
@@ -8,4 +11,7 @@ csv
 pickle
 sklearn
 enchant
-luigi
+re
+os
+lxml
+unidecode
