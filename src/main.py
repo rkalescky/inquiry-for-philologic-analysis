@@ -4,11 +4,6 @@ import preprocess
 import mallet
 
 
-# this is how we load environment on our compute cluster
-os.system('module load anaconda/3-5.2.0')
-
-
-
 # change switches to trigger different parts of pipeline
 to_tsv = False
 custom_prep = True
