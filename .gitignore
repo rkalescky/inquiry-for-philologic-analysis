@@ -5,3 +5,4 @@ slurm*
 logs/
 data/
 .vscode
+__pycache__/
